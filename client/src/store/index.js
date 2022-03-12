@@ -33,6 +33,15 @@ export default createStore({
       .catch(error => {
         UIkit.notification(error.response.data.error.message, {status: 'danger'});
       });
+    },
+    logout ({ commit }) {
+      axios.post('/api/logout').then(() => {
+        commit('setUserLoggedIn', undefined);
+        router.push('/login');
+      })
+      .catch(error => {
+        UIkit.notification(error.response.data.error.message, {status: 'danger'});
+      });
     }
   },
   modules: {

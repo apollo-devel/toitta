@@ -27,3 +27,9 @@ def login():
     user['_id'] = str(user['_id'])
     session['user'] = user
     return jsonify(user)
+
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    session['user'] = None
+    return "", 204
