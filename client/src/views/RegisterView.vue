@@ -67,31 +67,26 @@
 
 <script>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import UIkit from 'uikit';
-import axios from 'axios';
+import { useStore } from 'vuex';
 
 export default {
     setup() {
-        const router = useRouter();
+        const store = useStore();
+
         const displayName = ref("");
         const username = ref("");
         const password = ref("");
         const passwordConfirm = ref("");
         const email = ref("");
         const onClick = () => {
-            var body = {
+            var user = {
                 display_name: displayName.value,
                 username: username.value,
                 password: password.value,
                 email: email.value
             };
-            axios.post('/api/users', body).then(() => {
-                router.push('/');
-            })
-            .catch(error => {
-                UIkit.notification(error.response.data.error.message, {status: 'danger'});
-            });
+
+            store.dispatch('registerUser', user);
         };
         return {
             displayName,

@@ -17,6 +17,6 @@ def register():
     user.create()
     del body['password']
     user = vars(user)
-    user['_id'] = str(user['_id'])
+    body['_id'] = user['_id'] = str(user['_id'])
     session['user'] = user
     return jsonify(body)
