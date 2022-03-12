@@ -2,15 +2,15 @@
     <div class="uk-container uk-width-1-2">
         <h1>Toitta Login</h1>
 
-        <form class="uk-form-horizontal uk-margin-large" @submit.prevent>
+        <form class="uk-form-horizontal uk-margin-large" @submit="onSubmit">
             <div class="uk-margin">
-                <label class="uk-form-label" for="login__email">メールアドレス</label>
+                <label class="uk-form-label" for="login__identifier">ユーザー名 または メールアドレス</label>
                 <div class="uk-form-controls">
                     <input
                         class="uk-input"
-                        id="login__email"
+                        id="login__identifier"
                         type="text"
-                        v-model="email"
+                        v-model="identifier"
                         required>
                 </div>
             </div>
@@ -26,7 +26,7 @@
                 </div>
             </div> 
             <div class="uk-margin">
-                <input class="uk-button uk-button-primary" type="submit"  value="ログイン" @click="onClick">
+                <input class="uk-button uk-button-primary" type="submit"  value="ログイン">
             </div>      
         </form>
     </div>
@@ -40,20 +40,22 @@ export default {
     setup() {
         const store = useStore();
 
-        const email = ref("");
+        const identifier = ref("");
         const password = ref("");
-        const onClick = () => {
+        const onSubmit = (e) => {
+            e.preventDefault();
+
             const credential = {
-                email: email.value,
+                identifier: identifier.value,
                 password: password.value
             };
 
             store.dispatch('login', credential);
         };
         return {
-            email,
+            identifier,
             password,
-            onClick
+            onSubmit
         };
     }
 }

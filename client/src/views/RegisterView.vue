@@ -2,7 +2,7 @@
     <div class="uk-container">
         <h1>ユーザー登録</h1>
 
-        <form class="uk-form-horizontal uk-margin-large" @submit.prevent>
+        <form class="uk-form-horizontal uk-margin-large" @submit="onSubmit">
             <div class="uk-margin">
                 <label class="uk-form-label" for="register__display-name">表示名</label>
                 <div class="uk-form-controls">
@@ -59,7 +59,7 @@
                 </div>
             </div>
             <div class="uk-margin">
-                <input class="uk-button uk-button-primary" type="submit"  value="登録" @click="onClick">
+                <input class="uk-button uk-button-primary" type="submit"  value="登録">
             </div>
         </form>
     </div>
@@ -78,7 +78,9 @@ export default {
         const password = ref("");
         const passwordConfirm = ref("");
         const email = ref("");
-        const onClick = () => {
+        const onSubmit = (e) => {
+            e.preventDefault();
+
             const user = {
                 display_name: displayName.value,
                 username: username.value,
@@ -94,7 +96,7 @@ export default {
             password,
             passwordConfirm,
             email,
-            onClick
+            onSubmit
         };
     },
 }

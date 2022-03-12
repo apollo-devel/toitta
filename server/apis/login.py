@@ -6,7 +6,13 @@ from server.main import app
 @app.route('/api/login', methods=['POST'])
 def login():
     body = request.json
-    user = User._collection.find_one({'email': body['email']})
+    if 'identifier' not in body or not body['identifier']:
+        return jsonify({'error': { 'message': 'ユーザー名 または メールアドレスは必須です。' }}), 400
+    if 'password' not in body or not body['password']:
+        return jsonify({'error': { 'message': 'パスワードは必須です。' }}), 400
+
+    identifier = body['identifier']
+    user = User._collection.find_one({'$or': [{'email': identifier}, {'username': identifier}]})
 
     if not user:
         return jsonify({'error': { 'message': 'ユーザーが存在しません。' }}), 400
