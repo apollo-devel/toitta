@@ -79,7 +79,7 @@ export default {
         const passwordConfirm = ref("");
         const email = ref("");
         const onClick = () => {
-            var user = {
+            const user = {
                 display_name: displayName.value,
                 username: username.value,
                 password: password.value,

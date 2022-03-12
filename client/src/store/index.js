@@ -24,6 +24,15 @@ export default createStore({
       .catch(error => {
         UIkit.notification(error.response.data.error.message, {status: 'danger'});
       });
+    },
+    login ({ commit }, credential) {
+      axios.post('/api/login', credential).then(resp => {
+        commit('setUserLoggedIn', resp.data);
+        router.push('/');
+      })
+      .catch(error => {
+        UIkit.notification(error.response.data.error.message, {status: 'danger'});
+      });
     }
   },
   modules: {
