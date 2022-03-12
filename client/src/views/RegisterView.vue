@@ -67,11 +67,13 @@
 
 <script>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import UIkit from 'uikit';
 import axios from 'axios';
 
 export default {
     setup() {
+        const router = useRouter();
         const displayName = ref("");
         const username = ref("");
         const password = ref("");
@@ -84,9 +86,11 @@ export default {
                 password: password.value,
                 email: email.value
             };
-            axios.post('/api/users', body).then(resp => {
-                UIkit.notification("success");
-                console.log(resp);
+            axios.post('/api/users', body).then(() => {
+                router.push('/');
+            })
+            .catch(error => {
+                UIkit.notification(error.response.data.error.message, {status: 'danger'});
             });
         };
         return {
