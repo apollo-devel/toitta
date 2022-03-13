@@ -1,6 +1,6 @@
 from flask import jsonify, request, session
-from server.models.user import User
-from server.main import app
+from models.user import User
+from main import app
 
 
 @app.route('/api/login', methods=['POST'])

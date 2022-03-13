@@ -1,4 +1,4 @@
-from server.database import db
+from database import db
 
 import hashlib
 import re
