@@ -1,5 +1,5 @@
 <template>
-    <div class="uk-container">
+    <div class="uk-container uk-text-center uk-padding">
         <h1>ユーザー登録</h1>
 
         <form class="uk-form-horizontal uk-margin-large" @submit="onSubmit">

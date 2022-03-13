@@ -1,5 +1,5 @@
 <template>
-    <div class="uk-container uk-width-1-2">
+    <div class="uk-container uk-width-1-2 uk-text-center uk-padding">
         <h1>Toitta Login</h1>
 
         <form class="uk-form-horizontal uk-margin-large" @submit="onSubmit">
