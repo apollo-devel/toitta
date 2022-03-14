@@ -7,4 +7,4 @@ app.secret_key = 'DUMMY'
 app.logger.setLevel(logging.INFO)
 
 
-from apis import login, users
+from apis import login, users, posts

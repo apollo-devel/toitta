@@ -1,14 +1,63 @@
 <template>
-    <div>
+    <form @submit="onSubmit">
         <div class="uk-flex uk-flex-top">
             <img src="https://ui-avatars.com/api/?name=あぽろ" class="uk-border-circle avatar">
-            <textarea placeholder="いまどうしてる？" class="uk-textarea uk-margin-left textarea"></textarea>
+            <textarea
+                v-model="content"
+                placeholder="いまどうしてる？" 
+                class="uk-textarea uk-margin-left textarea"></textarea>
         </div>
         <div class="uk-flex uk-flex-right">
-            <button class="uk-button uk-button-primary uk-margin-right">ツイートする</button>
+            <input 
+                class="uk-button uk-button-primary uk-margin-right" 
+                type="submit" 
+                value="ツイートする"
+                :disabled="isInvalid">
         </div>
-    </div>
+    </form>
 </template>
+
+<script>
+import { computed, ref } from 'vue';
+import { useStore } from 'vuex';
+
+export default {
+    setup() {
+        const store = useStore();
+
+        const content = ref('');
+
+        const isInvalid = computed(() => {
+            const value = content.value;
+            if (value.trim().length === 0) {
+                return true;
+            }
+
+            if (value.length > 140) {
+                return true;
+            }
+
+            return false;
+        });
+
+        const onSubmit = e => {
+            e.preventDefault();
+
+            store.dispatch('createPost', content.value)
+                .then(success => {
+                    if (success) {
+                        content.value = '';
+                    }
+                });
+        };
+        return {
+            content,
+            onSubmit,
+            isInvalid
+        };
+    },
+}
+</script>
 
 <style scoped>
 .textarea {
