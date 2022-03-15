@@ -5,6 +5,7 @@ const routes = [
   {
     path: '/',
     name: 'home',
+    meta: { loginRequired: true },
     component: HomeView
   },
   {

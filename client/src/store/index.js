@@ -6,13 +6,17 @@ import UIkit from 'uikit';
 
 export default createStore({
   state: {
-    userLoggedIn: undefined
+    userLoggedIn: undefined,
+    posts: []
   },
   getters: {
   },
   mutations: {
     setUserLoggedIn (state, user) {
       state.userLoggedIn = user;
+    },
+    setPosts (state, posts) {
+      state.posts = posts;
     }
   },
   actions: {
@@ -56,6 +60,18 @@ export default createStore({
           UIkit.notification(error.response.data.error.message, {status: 'danger'});
           return false;
         });
+    },
+    loadPosts ({ commit }) {
+      axios.get('/api/posts').then(resp => {
+        commit('setPosts', resp.data);
+      })
+      .catch(error => {
+        if (error.response.status === 401) {
+          router.push('/login');
+        } else {
+          UIkit.notification(error.response.data.error.message, {status: 'danger'});
+        }
+      });
     }
   },
   modules: {

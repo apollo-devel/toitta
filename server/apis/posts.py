@@ -1,6 +1,7 @@
 from flask import jsonify, request, session
 import pymongo
 from models.post import Post
+from models.user import User
 from main import app
 from apis import login_required
 
@@ -29,3 +30,17 @@ def create_post():
 
     body['_id'] = str(post._id)
     return jsonify(body)
+
+
+@app.route('/api/posts', methods=['GET'])
+@login_required()
+def list_posts():
+    results = []
+    for post in Post._collection.find(sort=[('created_at', pymongo.DESCENDING)]):
+        post['_id'] = str(post['_id'])
+        posted_by = User._collection.find_one({'_id': post['posted_by']})
+        if posted_by:
+            posted_by['_id'] = str(posted_by['_id'])
+            post['posted_by'] = posted_by
+        results.append(post)
+    return jsonify(results)

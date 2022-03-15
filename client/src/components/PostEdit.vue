@@ -1,7 +1,7 @@
 <template>
     <form @submit="onSubmit">
         <div class="uk-flex uk-flex-top">
-            <img src="https://ui-avatars.com/api/?name=あぽろ" class="uk-border-circle avatar">
+            <img :src="url" class="uk-border-circle avatar">
             <textarea
                 v-model="content"
                 placeholder="いまどうしてる？" 
@@ -20,6 +20,8 @@
 <script>
 import { computed, ref } from 'vue';
 import { useStore } from 'vuex';
+
+import { imageUrl } from '@/functions/avatar.js';
 
 export default {
     setup() {
@@ -50,10 +52,13 @@ export default {
                     }
                 });
         };
+
+        const url = imageUrl(store.state.userLoggedIn);
         return {
             content,
             onSubmit,
-            isInvalid
+            isInvalid,
+            url
         };
     },
 }
