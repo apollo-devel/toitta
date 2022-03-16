@@ -8,13 +8,22 @@ import Icons from 'uikit/dist/js/uikit-icons'
 import 'uikit/dist/css/uikit.min.css'
 UIkit.use(Icons)
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (to.matched.some(record => record.meta.loginRequired)) {
-    const user = store.state.userLoggedIn;
+    let user = store.state.userLoggedIn;
     if (user && user._id) {
       next();
     } else {
-      next({ path: '/login' });
+      await store.dispatch('loginCheck')
+        .catch(() => {
+          // noop
+        });
+      user = store.state.userLoggedIn;
+      if (user && user._id) {
+        next();
+      } else {
+        next({ path: '/login' });
+      }
     }
   } else {
     next();

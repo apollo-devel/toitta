@@ -1,4 +1,5 @@
 from flask import jsonify, request, session
+from apis import login_required
 from models.user import User
 from main import app
 
@@ -31,5 +32,11 @@ def login():
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
-    session['user'] = None
+    del session['user']
     return "", 204
+
+
+@app.route('/api/session', methods=['GET'])
+@login_required()
+def get_session():
+    return jsonify(session['user'])

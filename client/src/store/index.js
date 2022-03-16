@@ -47,7 +47,11 @@ export default createStore({
         UIkit.notification(error.response.data.error.message, {status: 'danger'});
       });
     },
-    createPost ({ state }, content) {
+    async loginCheck ({ commit }) {
+      const resp = await axios.get('/api/session');
+      commit('setUserLoggedIn', resp.data);
+    },
+    async createPost ({ state }, content) {
       const body = {
         content,
         posted_by: state.userLoggedIn._id
