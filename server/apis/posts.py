@@ -1,5 +1,7 @@
 from flask import jsonify, request, session
+from bson.objectid import ObjectId
 import pymongo
+from models.like import Like
 from models.post import Post
 from models.user import User
 from main import app
@@ -37,10 +39,40 @@ def create_post():
 def list_posts():
     results = []
     for post in Post._collection.find(sort=[('created_at', pymongo.DESCENDING)]):
-        post['_id'] = str(post['_id'])
-        posted_by = User._collection.find_one({'_id': post['posted_by']})
-        if posted_by:
-            posted_by['_id'] = str(posted_by['_id'])
-            post['posted_by'] = posted_by
-        results.append(post)
+        results.append(_populate(post))
     return jsonify(results)
+
+
+@app.route('/api/posts/<post_id>/like', methods=['POST'])
+@login_required()
+def like_post(post_id):
+    post = Post._collection.find_one({'_id': ObjectId(post_id)})
+    if not post:
+        return jsonify({'error': { 'message': '投稿が存在しません' }}), 404
+    user_id = session['user']['_id']
+    like = Like._collection.find_one({'post': ObjectId(post_id), 'liked_by': ObjectId(user_id)})
+    if like:
+        return jsonify(_populate(post))
+    else:
+        like = Like(post=post_id,
+                    posted_at=post['created_at'],
+                    liked_by=user_id)
+        try:
+            like.create()
+        except pymongo.errors.DuplicateKeyError:
+            pass
+        like_count = Like._collection.count_documents({'post': ObjectId(post_id)})
+        post = Post._collection.find_one_and_update(
+            {'_id': ObjectId(post_id)}, 
+            {'$set': {'like_count': like_count}},
+            return_document=pymongo.ReturnDocument.AFTER)
+        return jsonify(_populate(post))
+
+
+def _populate(post):
+    post['_id'] = str(post['_id'])
+    posted_by = User._collection.find_one({'_id': post['posted_by']})
+    if posted_by:
+        posted_by['_id'] = str(posted_by['_id'])
+        post['posted_by'] = posted_by
+    return post

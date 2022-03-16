@@ -16,7 +16,7 @@
                 <div class="uk-flex uk-flex-between uk-margin-small-top">
                     <span class="uk-flex-1" uk-icon="comment"></span>
                     <span class="uk-flex-1" uk-icon="bolt"></span>
-                    <span class="uk-flex-1" uk-icon="heart"></span>
+                    <span class="uk-flex-1" uk-icon="heart" @click="onLikeClick"></span>
                 </div>
             </div>
         </div>
@@ -26,15 +26,23 @@
 
 <script>
 import { imageUrl } from '@/functions/avatar.js';
+import { useStore } from 'vuex';
 
 export default {
     props: {
         post: Object
     },
     setup(props) {
+        const store = useStore();
+
         const url = imageUrl(props.post.posted_by);
+
+        const onLikeClick = () => {
+            store.dispatch('likePost', props.post);
+        };
         return {
-            url
+            url,
+            onLikeClick
         };
     },
 }

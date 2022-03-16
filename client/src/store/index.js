@@ -76,6 +76,11 @@ export default createStore({
           UIkit.notification(error.response.data.error.message, {status: 'danger'});
         }
       });
+    },
+    likePost (_, post) {
+      axios.post(`/api/posts/${post._id}/like`).then(resp => {
+        console.log(resp.data);
+      });
     }
   },
   modules: {
