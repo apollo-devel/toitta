@@ -40,6 +40,15 @@ def list_posts():
     results = []
     for post in Post._collection.find(sort=[('created_at', pymongo.DESCENDING)]):
         results.append(_populate(post))
+    
+    if results:
+        user_id = ObjectId(session['user']['_id'])
+        start = results[-1]['created_at']
+        end = results[0]['created_at']
+        liked_posts = { str(like['post']) for like in Like._collection.find({'liked_by': user_id, 'posted_at': {'$gte': start, '$lte': end}}) }
+        for result in results:
+            result['liking'] = result['_id'] in liked_posts
+
     return jsonify(results)
 
 
@@ -52,6 +61,7 @@ def like_post(post_id):
     user_id = session['user']['_id']
     like = Like._collection.find_one({'post': ObjectId(post_id), 'liked_by': ObjectId(user_id)})
     if like:
+        post['liking'] = True
         return jsonify(_populate(post))
     else:
         like = Like(post=post_id,
@@ -66,6 +76,29 @@ def like_post(post_id):
             {'_id': ObjectId(post_id)}, 
             {'$set': {'like_count': like_count}},
             return_document=pymongo.ReturnDocument.AFTER)
+        post['liking'] = True
+        return jsonify(_populate(post))
+
+
+
+@app.route('/api/posts/<post_id>/like', methods=['DELETE'])
+@login_required()
+def unlike_post(post_id):
+    post = Post._collection.find_one({'_id': ObjectId(post_id)})
+    if not post:
+        return jsonify({'error': { 'message': '投稿が存在しません' }}), 404
+    user_id = session['user']['_id']
+    like = Like._collection.find_one_and_delete({'post': ObjectId(post_id), 'liked_by': ObjectId(user_id)})
+    if not like:
+        post['liking'] = False
+        return jsonify(_populate(post))
+    else:
+        like_count = Like._collection.count_documents({'post': ObjectId(post_id)})
+        post = Post._collection.find_one_and_update(
+            {'_id': ObjectId(post_id)}, 
+            {'$set': {'like_count': like_count}},
+            return_document=pymongo.ReturnDocument.AFTER)
+        post['liking'] = False
         return jsonify(_populate(post))
 
 

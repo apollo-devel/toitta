@@ -16,7 +16,10 @@
                 <div class="uk-flex uk-flex-between uk-margin-small-top">
                     <span class="uk-flex-1" uk-icon="comment"></span>
                     <span class="uk-flex-1" uk-icon="bolt"></span>
-                    <span class="uk-flex-1" uk-icon="heart" @click="onLikeClick"></span>
+                    <span class="uk-flex-1 like" :class="{ active: post.liking }">
+                        <span uk-icon="heart" @click="onLikeClick"></span>
+                        <span class="uk-margin-small-left">{{ post.like_count ? post.like_count : '' }}</span>
+                    </span>
                 </div>
             </div>
         </div>
@@ -38,7 +41,11 @@ export default {
         const url = imageUrl(props.post.posted_by);
 
         const onLikeClick = () => {
-            store.dispatch('likePost', props.post);
+            if (props.post.liking) {
+                store.dispatch('unlikePost', props.post);
+            } else {
+                store.dispatch('likePost', props.post);
+            }
         };
         return {
             url,
@@ -52,5 +59,13 @@ export default {
 .avatar {
     width: 50px;
     height: 50px;
+}
+
+.like.active {
+    color: red;
+}
+
+.like {
+    cursor: pointer;
 }
 </style>

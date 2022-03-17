@@ -17,6 +17,12 @@ export default createStore({
     },
     setPosts (state, posts) {
       state.posts = posts;
+    },
+    updatePost (state, post) {
+      const orig = state.posts.find(p => p._id === post._id);
+      if (orig) {
+        Object.assign(orig, post);
+      }
     }
   },
   actions: {
@@ -77,9 +83,28 @@ export default createStore({
         }
       });
     },
-    likePost (_, post) {
+    likePost ({ commit }, post) {
       axios.post(`/api/posts/${post._id}/like`).then(resp => {
-        console.log(resp.data);
+        commit('updatePost', resp.data);
+      })
+      .catch(error => {
+        if (error.response.status === 401) {
+          router.push('/login');
+        } else {
+          UIkit.notification(error.response.data.error.message, {status: 'danger'});
+        }
+      });
+    },
+    unlikePost ({ commit }, post) {
+      axios.delete(`/api/posts/${post._id}/like`).then(resp => {
+        commit('updatePost', resp.data);
+      })
+      .catch(error => {
+        if (error.response.status === 401) {
+          router.push('/login');
+        } else {
+          UIkit.notification(error.response.data.error.message, {status: 'danger'});
+        }
       });
     }
   },

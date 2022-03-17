@@ -12,10 +12,12 @@ class Post:
     def __init__(self,
                 content: str,
                 posted_by: str,
+                like_count: int = 0,
                 created_at: datetime = None,
                 updated_at: datetime = None):
         self.content = content
         self.posted_by = posted_by
+        self.like_count = like_count
         if not created_at:
             created_at = datetime.now()
         self.created_at = created_at
