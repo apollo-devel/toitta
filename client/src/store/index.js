@@ -106,6 +106,30 @@ export default createStore({
           UIkit.notification(error.response.data.error.message, {status: 'danger'});
         }
       });
+    },
+    retweetPost ({ commit }, post) {
+      axios.post(`/api/posts/${post._id}/retweet`).then(resp => {
+        commit('updatePost', resp.data);
+      })
+      .catch(error => {
+        if (error.response.status === 401) {
+          router.push('/login');
+        } else {
+          UIkit.notification(error.response.data.error.message, {status: 'danger'});
+        }
+      });
+    },
+    unretweetPost ({ commit }, post) {
+      axios.delete(`/api/posts/${post._id}/retweet`).then(resp => {
+        commit('updatePost', resp.data);
+      })
+      .catch(error => {
+        if (error.response.status === 401) {
+          router.push('/login');
+        } else {
+          UIkit.notification(error.response.data.error.message, {status: 'danger'});
+        }
+      });
     }
   },
   modules: {

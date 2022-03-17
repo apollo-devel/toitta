@@ -15,7 +15,10 @@
                 </div>
                 <div class="uk-flex uk-flex-between uk-margin-small-top">
                     <span class="uk-flex-1" uk-icon="comment"></span>
-                    <span class="uk-flex-1" uk-icon="bolt"></span>
+                    <span class="uk-flex-1 retweet" :class="{ active: post.retweeting }">
+                        <span uk-icon="bolt" @click="onRetweetClick"></span>
+                        <span class="uk-margin-small-left">{{ post.retweet_count ? post.retweet_count : '' }}</span>
+                    </span>                    
                     <span class="uk-flex-1 like" :class="{ active: post.liking }">
                         <span uk-icon="heart" @click="onLikeClick"></span>
                         <span class="uk-margin-small-left">{{ post.like_count ? post.like_count : '' }}</span>
@@ -47,9 +50,18 @@ export default {
                 store.dispatch('likePost', props.post);
             }
         };
+
+        const onRetweetClick = () => {
+            if (props.post.retweeting) {
+                store.dispatch('unretweetPost', props.post);
+            } else {
+                store.dispatch('retweetPost', props.post);
+            }
+        };
         return {
             url,
-            onLikeClick
+            onLikeClick,
+            onRetweetClick
         };
     },
 }
@@ -65,7 +77,12 @@ export default {
     color: red;
 }
 
-.like {
+.retweet.active {
+    color: green;
+}
+
+.like,
+.retweet {
     cursor: pointer;
 }
 </style>

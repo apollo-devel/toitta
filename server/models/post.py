@@ -12,12 +12,16 @@ class Post:
     def __init__(self,
                 content: str,
                 posted_by: str,
+                retweeted_post: str = None,
                 like_count: int = 0,
+                retweet_count: int=0,
                 created_at: datetime = None,
                 updated_at: datetime = None):
         self.content = content
         self.posted_by = posted_by
+        self.retweeted_post = retweeted_post
         self.like_count = like_count
+        self.retweet_count = retweet_count
         if not created_at:
             created_at = datetime.now()
         self.created_at = created_at
@@ -28,6 +32,8 @@ class Post:
     def create(self):
         data = vars(self)
         data['posted_by'] = ObjectId(data['posted_by'])
+        if 'retweeted_post' in data and data['retweeted_post']:
+            data['retweeted_post'] = ObjectId(data['retweeted_post'])
         return self._collection.insert_one(data)
     
     @classmethod

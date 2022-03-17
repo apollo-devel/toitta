@@ -3,6 +3,7 @@ from bson.objectid import ObjectId
 import pymongo
 from models.like import Like
 from models.post import Post
+from models.retweet import Retweet
 from models.user import User
 from main import app
 from apis import login_required
@@ -43,11 +44,16 @@ def list_posts():
     
     if results:
         user_id = ObjectId(session['user']['_id'])
-        start = results[-1]['created_at']
-        end = results[0]['created_at']
-        liked_posts = { str(like['post']) for like in Like._collection.find({'liked_by': user_id, 'posted_at': {'$gte': start, '$lte': end}}) }
+        term = {
+            '$gte': results[-1]['created_at'],
+            '$lte': results[0]['created_at']
+        }
+
+        liked_posts = { str(like['post']) for like in Like._collection.find({'liked_by': user_id, 'posted_at': term}) }
+        retweeted_posts = { str(retweet['post']) for retweet in Retweet._collection.find({'retweeted_by': user_id, 'posted_at': term}) }
         for result in results:
             result['liking'] = result['_id'] in liked_posts
+            result['retweeting'] = result['_id'] in retweeted_posts
 
     return jsonify(results)
 
@@ -102,10 +108,70 @@ def unlike_post(post_id):
         return jsonify(_populate(post))
 
 
+@app.route('/api/posts/<post_id>/retweet', methods=['POST'])
+@login_required()
+def retweet_post(post_id):
+    post = Post._collection.find_one({'_id': ObjectId(post_id)})
+    if not post:
+        return jsonify({'error': { 'message': '投稿が存在しません' }}), 404
+    user_id = session['user']['_id']
+    retweet = Retweet._collection.find_one({'post': ObjectId(post_id), 'retweeted_by': ObjectId(user_id)})
+    if retweet:
+        post['retweeting'] = True
+        return jsonify(_populate(post))
+    else:
+        retweet = Retweet(post=post_id,
+                          posted_at=post['created_at'],
+                          retweeted_by=user_id)
+        try:
+            retweet.create()
+            retweeting_post = Post(content=None,
+                                   posted_by=user_id,
+                                   retweeted_post=post_id)
+            retweeting_post.create()
+        except pymongo.errors.DuplicateKeyError:
+            pass
+        retweet_count = Retweet._collection.count_documents({'post': ObjectId(post_id)})
+        post = Post._collection.find_one_and_update(
+            {'_id': ObjectId(post_id)}, 
+            {'$set': {'retweet_count': retweet_count}},
+            return_document=pymongo.ReturnDocument.AFTER)
+        post['retweeting'] = True
+
+        return jsonify(_populate(post))
+
+
+@app.route('/api/posts/<post_id>/retweet', methods=['DELETE'])
+@login_required()
+def unretweet_post(post_id):
+    post = Post._collection.find_one({'_id': ObjectId(post_id)})
+    if not post:
+        return jsonify({'error': { 'message': '投稿が存在しません' }}), 404
+    user_id = session['user']['_id']
+    retweet = Retweet._collection.find_one_and_delete({'post': ObjectId(post_id), 'retweeted_by': ObjectId(user_id)})
+    Post._collection.find_one_and_delete({'posted_by': ObjectId(user_id), 'retweeted_post': ObjectId(post_id)})
+    if not retweet:
+        post['retweeting'] = False
+        return jsonify(_populate(post))
+    else:
+        retweet_count = Retweet._collection.count_documents({'post': ObjectId(post_id)})
+        post = Post._collection.find_one_and_update(
+            {'_id': ObjectId(post_id)}, 
+            {'$set': {'retweet_count': retweet_count}},
+            return_document=pymongo.ReturnDocument.AFTER)
+        post['retweeting'] = False
+
+        return jsonify(_populate(post))
+
+
 def _populate(post):
+    if not post:
+        return post
     post['_id'] = str(post['_id'])
     posted_by = User._collection.find_one({'_id': post['posted_by']})
     if posted_by:
         posted_by['_id'] = str(posted_by['_id'])
         post['posted_by'] = posted_by
+    if 'retweeted_post' in post and post['retweeted_post']:
+        post['retweeted_post'] = _populate(Post._collection.find_one({'_id': post['retweeted_post']}))
     return post
