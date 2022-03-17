@@ -3,7 +3,7 @@ import logging
 
 app = Flask(__name__)
 app.secret_key = 'DUMMY'
-
+app.config['SESSION_COOKIE_NAME'] = '__session'
 app.logger.setLevel(logging.INFO)
 
 

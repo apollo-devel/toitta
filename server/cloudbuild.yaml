@@ -1,0 +1,9 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/toitta-dev/toitta-api', '--build-arg=CRED=${_CRED}', '.']
+images: ['gcr.io/toitta-dev/toitta-api']
+serviceAccount: 'projects/toitta-dev/serviceAccounts/ci-deploy@toitta-dev.iam.gserviceaccount.com'
+substitutions:
+ _CRED: DUMMY
+options:
+ logging: CLOUD_LOGGING_ONLY

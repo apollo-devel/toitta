@@ -5,8 +5,9 @@ FROM python:3.10-slim
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
 
-# TODO 
-ENV MONGO_CREDENTIAL admin:XXXXXXXX
+# TODO
+ARG CRED
+ENV MONGO_CREDENTIAL ${CRED}
 
 # Copy local code to the container image.
 ENV APP_HOME /app

@@ -1,0 +1,49 @@
+name: Deploy
+
+on:
+  push:
+    branches: master
+
+permissions:
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          workload_identity_provider: 'projects/837189962146/locations/global/workloadIdentityPools/dev-pool/providers/gh-provider'
+          service_account: 'ci-deploy@toitta-dev.iam.gserviceaccount.com'
+      
+      - uses: 'actions/setup-node@v2'
+        with:
+          node-version: '14'
+
+      - name: 'Build Client'
+        working-directory: ./client
+        run: |-
+          npm install
+          npm run build        
+
+      - name: 'Build Image'
+        working-directory: ./server
+        run: gcloud builds submit --substitutions=_CRED=${{ secrets.MONGO_CREDENTIAL }}
+
+      - name: 'Deploy API'
+        uses: 'google-github-actions/deploy-cloudrun@v0'
+        with:
+          service: 'toitta-api'
+          image: 'gcr.io/toitta-dev/toitta-api'
+          region: 'asia-northeast1'
+
+      - name: 'Deploy Client'
+        working-directory: ./client
+        run: |-
+          npm install -g firebase-tools
+          firebase deploy
