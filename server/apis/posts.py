@@ -54,6 +54,12 @@ def list_posts():
         for result in results:
             result['liking'] = result['_id'] in liked_posts
             result['retweeting'] = result['_id'] in retweeted_posts
+        
+        for result in results:
+            if 'retweeted_post' in result and '_id' in result['retweeted_post']:
+                retweeted_post_id = ObjectId(result['retweeted_post']['_id'])
+                result['retweeted_post']['liking'] = Like._collection.find_one({'liked_by': user_id, 'post': retweeted_post_id}) is not None
+                result['retweeted_post']['retweeting'] = Retweet._collection.find_one({'retweeted_by': user_id, 'post': retweeted_post_id}) is not None
 
     return jsonify(results)
 
@@ -171,6 +177,7 @@ def _populate(post):
     posted_by = User._collection.find_one({'_id': post['posted_by']})
     if posted_by:
         posted_by['_id'] = str(posted_by['_id'])
+        del posted_by['hashed_password']
         post['posted_by'] = posted_by
     if 'retweeted_post' in post and post['retweeted_post']:
         post['retweeted_post'] = _populate(Post._collection.find_one({'_id': post['retweeted_post']}))

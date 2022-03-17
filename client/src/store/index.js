@@ -23,6 +23,9 @@ export default createStore({
       if (orig) {
         Object.assign(orig, post);
       }
+      state.posts
+        .filter(p => p.retweeted_post && p.retweeted_post._id === post._id)
+        .forEach(p => Object.assign(p.retweeted_post, post));
     }
   },
   actions: {

@@ -1,27 +1,28 @@
 <template>
     <div class="uk-margin-right">
+        <div class="uk-margin-small-left uk-margin-small-bottom" v-if="isRetweet">{{post.posted_by.display_name}}がリツイート</div>
         <div class="uk-flex uk-flex-top">
             <img :src="url" class="uk-border-circle avatar">
             <div class="uk-flex uk-flex-left uk-flex-column uk-margin-left uk-flex-1">
                 <div class="uk-flex uk-flex-middle uk-flex-row">
-                    <span class="uk-text-bold">{{ post.posted_by.display_name }}</span>
-                    <span class="uk-margin-small-left uk-text-muted">@{{ post.posted_by.username }}</span>
-                    <span class="uk-margin-small-left uk-text-muted">{{ post.created_at }}</span>
+                    <span class="uk-text-bold">{{ displayPost.posted_by.display_name }}</span>
+                    <span class="uk-margin-small-left uk-text-muted">@{{ displayPost.posted_by.username }}</span>
+                    <span class="uk-margin-small-left uk-text-muted">{{ displayPost.created_at }}</span>
                     <span class="uk-flex-1"></span>
                     <span uk-icon="icon: close; ratio: 0.8"></span>
                 </div>
                 <div class="uk-flex uk-margin-small-top">
-                    {{ post.content }}
+                    {{ displayPost.content }}
                 </div>
                 <div class="uk-flex uk-flex-between uk-margin-small-top">
                     <span class="uk-flex-1" uk-icon="comment"></span>
-                    <span class="uk-flex-1 retweet" :class="{ active: post.retweeting }">
+                    <span class="uk-flex-1 retweet" :class="{ active: displayPost.retweeting }">
                         <span uk-icon="bolt" @click="onRetweetClick"></span>
-                        <span class="uk-margin-small-left">{{ post.retweet_count ? post.retweet_count : '' }}</span>
+                        <span class="uk-margin-small-left">{{ displayPost.retweet_count ? displayPost.retweet_count : '' }}</span>
                     </span>                    
-                    <span class="uk-flex-1 like" :class="{ active: post.liking }">
+                    <span class="uk-flex-1 like" :class="{ active: displayPost.liking }">
                         <span uk-icon="heart" @click="onLikeClick"></span>
-                        <span class="uk-margin-small-left">{{ post.like_count ? post.like_count : '' }}</span>
+                        <span class="uk-margin-small-left">{{ displayPost.like_count ? displayPost.like_count : '' }}</span>
                     </span>
                 </div>
             </div>
@@ -41,24 +42,30 @@ export default {
     setup(props) {
         const store = useStore();
 
-        const url = imageUrl(props.post.posted_by);
+        const isRetweet = Boolean(props.post.retweeted_post);
+        const displayPost = isRetweet ? props.post.retweeted_post : props.post;
+
+        const url = imageUrl(displayPost.posted_by);
+
 
         const onLikeClick = () => {
-            if (props.post.liking) {
-                store.dispatch('unlikePost', props.post);
+            if (displayPost.liking) {
+                store.dispatch('unlikePost', displayPost);
             } else {
-                store.dispatch('likePost', props.post);
+                store.dispatch('likePost', displayPost);
             }
         };
 
         const onRetweetClick = () => {
-            if (props.post.retweeting) {
-                store.dispatch('unretweetPost', props.post);
+            if (displayPost.retweeting) {
+                store.dispatch('unretweetPost', displayPost);
             } else {
-                store.dispatch('retweetPost', props.post);
+                store.dispatch('retweetPost', displayPost);
             }
         };
         return {
+            isRetweet,
+            displayPost,
             url,
             onLikeClick,
             onRetweetClick
