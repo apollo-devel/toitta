@@ -1,28 +1,28 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-import store from './store'
+import UIkit from "uikit";
+import Icons from "uikit/dist/js/uikit-icons";
+import { createApp } from "vue";
 
-import UIkit from 'uikit'
-import Icons from 'uikit/dist/js/uikit-icons'
-import 'uikit/dist/css/uikit.min.css'
-UIkit.use(Icons)
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
+
+import "uikit/dist/css/uikit.min.css";
+UIkit.use(Icons);
 
 router.beforeEach(async (to, from, next) => {
-  if (to.matched.some(record => record.meta.loginRequired)) {
+  if (to.matched.some((record) => record.meta.loginRequired)) {
     let user = store.state.userLoggedIn;
     if (user && user._id) {
       next();
     } else {
-      await store.dispatch('loginCheck')
-        .catch(() => {
-          // noop
-        });
+      await store.dispatch("loginCheck").catch(() => {
+        // noop
+      });
       user = store.state.userLoggedIn;
       if (user && user._id) {
         next();
       } else {
-        next({ path: '/login' });
+        next({ path: "/login" });
       }
     }
   } else {
@@ -30,4 +30,4 @@ router.beforeEach(async (to, from, next) => {
   }
 });
 
-createApp(App).use(store).use(router).mount('#app')
+createApp(App).use(store).use(router).mount("#app");

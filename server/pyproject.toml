@@ -1,0 +1,6 @@
+[tool.black]
+exclude="server-env"
+
+[tool.isort]
+profile="black"
+skip="server-env"

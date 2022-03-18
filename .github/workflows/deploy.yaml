@@ -25,11 +25,29 @@ jobs:
         with:
           node-version: '14'
 
+      - name: 'Install Deps (Client)'
+        working-directory: ./client
+        run: npm install
+
+      - name: 'Lint (Client)'
+        working-directory: ./client
+        run: npm run lint-no-fix
+
       - name: 'Build Client'
         working-directory: ./client
+        run: npm run build
+
+      - uses: 'actions/setup-python@v3'
+
+      - name: 'Install Deps (Server)'
+        working-directory: ./server
+        run: pip install -r requirements.txt -c constraints.txt
+      
+      - name: 'Lint (Server)'
+        working-directory: ./server
         run: |-
-          npm install
-          npm run build        
+          black . --check
+          isort . --check-only
 
       - name: 'Build Image'
         working-directory: ./server

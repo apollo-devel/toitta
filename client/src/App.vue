@@ -5,23 +5,24 @@
 </template>
 
 <script>
-import { useRoute } from 'vue-router';
-import DefaultLayout from '@/components/layouts/DefaultLayout.vue';
-import SimpleLayout from '@/components/layouts/SimpleLayout.vue';
+import { useRoute } from "vue-router";
+
+import DefaultLayout from "@/components/layouts/DefaultLayout.vue";
+import SimpleLayout from "@/components/layouts/SimpleLayout.vue";
 
 export default {
   components: {
     DefaultLayout,
-    SimpleLayout
+    SimpleLayout,
   },
   setup() {
     const route = useRoute();
     const layout = () => {
-      return route.meta.layout ? route.meta.layout : 'default-layout';
+      return route.meta.layout ? route.meta.layout : "default-layout";
     };
     return {
-      layout
-    }
+      layout,
+    };
   },
-}
+};
 </script>
