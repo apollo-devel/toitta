@@ -10,6 +10,12 @@ const routes = [
     component: HomeView,
   },
   {
+    path: "/profile/:username?",
+    name: "profile",
+    meta: { loginRequired: true },
+    component: () => import("../views/ProfileView.vue"),
+  },
+  {
     path: "/register",
     name: "register",
     meta: { layout: "simple-layout" },

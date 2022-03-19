@@ -63,7 +63,11 @@ def list_posts():
             result["retweeting"] = result["_id"] in retweeted_posts
 
         for result in results:
-            if "retweeted_post" in result and "_id" in result["retweeted_post"]:
+            if (
+                "retweeted_post" in result
+                and result["retweeted_post"]
+                and "_id" in result["retweeted_post"]
+            ):
                 retweeted_post_id = ObjectId(result["retweeted_post"]["_id"])
                 result["retweeted_post"]["liking"] = (
                     Like._collection.find_one(
