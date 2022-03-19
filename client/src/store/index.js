@@ -8,6 +8,12 @@ export default createStore({
   state: {
     userLoggedIn: undefined,
     posts: [],
+    profile: {
+      user: {
+        display_name: "",
+        username: "",
+      },
+    },
   },
   getters: {},
   mutations: {
@@ -25,6 +31,9 @@ export default createStore({
       state.posts
         .filter((p) => p.retweeted_post && p.retweeted_post._id === post._id)
         .forEach((p) => Object.assign(p.retweeted_post, post));
+    },
+    setProfileUser(state, user) {
+      state.profile.user = user;
     },
   },
   actions: {
@@ -167,6 +176,11 @@ export default createStore({
             });
           }
         });
+    },
+    loadProfileUser({ commit }, username) {
+      return axios.get(`/api/users/${username}`).then((resp) => {
+        commit("setProfileUser", resp.data);
+      });
     },
   },
   modules: {},

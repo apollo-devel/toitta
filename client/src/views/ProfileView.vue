@@ -1,12 +1,14 @@
 <template>
   <div class="uk-width-1-1 uk-position-relative">
-    <h3 class="uk-margin-small-top uk-margin-small-bottom">Hoge</h3>
+    <h3 class="uk-margin-small-top uk-margin-small-bottom">
+      {{ username }}
+    </h3>
     <div class="cover uk-margin-right"></div>
     <img
-      src="https://ui-avatars.com/api/?name=?"
+      :src="imageUrl(user)"
       class="uk-position-absolute uk-border-circle uk-margin-small-left avatar"
     />
-    <div class="uk-width-1-1 uk-position-absolute">
+    <div class="uk-width-1-1 uk-position-absolute" v-if="user._id">
       <div
         class="uk-flex uk-flex-row uk-flex-top uk-margin-right uk-margin-small-top buttons"
       >
@@ -18,9 +20,9 @@
         </button>
       </div>
       <div class="uk-flex uk-flex-column uk-flex-left uk-margin-small-left">
-        <div class="uk-text-large uk-text-bold">Hoge</div>
-        <div>@hoge</div>
-        <div class="uk-margin-small-top">あいうえお</div>
+        <div class="uk-text-large uk-text-bold">{{ user.display_name }}</div>
+        <div>@{{ user.username }}</div>
+        <div class="uk-margin-small-top">{{ user.description }}</div>
         <div class="uk-margin-small-top">
           <span class="uk-text-bold">100</span>
           <span class="uk-margin-right">フォロー中</span>
@@ -41,19 +43,40 @@
         </ul>
       </div>
     </div>
+    <div class="uk-position-absolute error-message" v-else>
+      <h3>ユーザーが存在しません</h3>
+    </div>
   </div>
 </template>
 
 <script>
-import UIkit from "uikit";
-import { ref, onMounted } from "vue";
+import { computed, onBeforeMount } from "vue";
+import { useRoute } from "vue-router";
+import { useStore } from "vuex";
+
+import { imageUrl } from "@/functions/avatar.js";
 
 export default {
   setup() {
-    const tabs = ref(null);
-    onMounted(() => {
-      UIkit.tab(tabs);
+    const route = useRoute();
+    const store = useStore();
+
+    const username = route.params.username
+      ? route.params.username
+      : store.state.userLoggedIn.username;
+
+    onBeforeMount(async () => {
+      await store.dispatch("loadProfileUser", username).catch(() => {
+        // noop
+      });
     });
+
+    const user = computed(() => store.state.profile.user);
+    return {
+      username,
+      user,
+      imageUrl,
+    };
   },
 };
 </script>
@@ -73,5 +96,10 @@ export default {
 
 .buttons {
   height: 60px;
+}
+
+.error-message {
+  margin-top: 30px;
+  margin-left: 132px;
 }
 </style>

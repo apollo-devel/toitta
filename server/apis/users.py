@@ -1,5 +1,6 @@
 from flask import jsonify, request, session
 
+from apis import login_required
 from main import app
 from models.user import User
 
@@ -29,3 +30,15 @@ def register():
     body["_id"] = user["_id"] = str(user["_id"])
     session["user"] = user
     return jsonify(body)
+
+
+@app.route("/api/users/<username>", methods=["GET"])
+@login_required()
+def get_user(username):
+    user = User._collection.find_one({"username": username})
+    if not user:
+        return jsonify({"error": {"message": "ユーザーが存在しません。"}}), 404
+
+    user["_id"] = str(user["_id"])
+    del user["hashed_password"]
+    return jsonify(user)
