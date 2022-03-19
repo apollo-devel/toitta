@@ -28,6 +28,12 @@ def login():
     del user["hashed_password"]
 
     user["_id"] = str(user["_id"])
+    if "following" not in user:
+        user["following"] = []
+    user["following"] = [str(_id) for _id in user["following"]]
+    if "followers" not in user:
+        user["followers"] = []
+    user["followers"] = [str(_id) for _id in user["followers"]]
     session["user"] = user
     return jsonify(user)
 

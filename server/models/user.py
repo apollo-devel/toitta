@@ -21,6 +21,8 @@ class User:
         self.username = username
         self.hashed_password = self.encrypt(password)
         self.email = email
+        self.following = []
+        self.followers = []
 
     @staticmethod
     def encrypt(password: str):

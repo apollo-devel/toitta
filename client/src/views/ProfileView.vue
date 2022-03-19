@@ -14,9 +14,18 @@
       >
         <div class="uk-flex-1"></div>
         <button
+          v-if="isMe"
           class="uk-button uk-button-default uk-button-small uk-text-bold"
         >
           プロフィールを編集
+        </button>
+        <button
+          v-else
+          class="follow uk-button uk-button-small uk-text-bold"
+          :class="isFollowing ? 'uk-button-default' : 'uk-button-secondary'"
+          @click="onFollowClick"
+        >
+          {{ isFollowing ? "フォロー中" : "フォロー" }}
         </button>
       </div>
       <div class="uk-flex uk-flex-column uk-flex-left uk-margin-small-left">
@@ -24,9 +33,9 @@
         <div>@{{ user.username }}</div>
         <div class="uk-margin-small-top">{{ user.description }}</div>
         <div class="uk-margin-small-top">
-          <span class="uk-text-bold">100</span>
+          <span class="uk-text-bold">{{ user.following.length }}</span>
           <span class="uk-margin-right">フォロー中</span>
-          <span class="uk-text-bold">50</span>
+          <span class="uk-text-bold">{{ user.followers.length }}</span>
           <span>フォロワー</span>
         </div>
       </div>
@@ -50,7 +59,7 @@
 </template>
 
 <script>
-import { computed, onBeforeMount } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
@@ -64,18 +73,43 @@ export default {
     const username = route.params.username
       ? route.params.username
       : store.state.userLoggedIn.username;
+    const isMe = ref(false);
+    const isFollowing = computed(
+      () =>
+        store.state.userLoggedIn.following &&
+        store.state.userLoggedIn.following.includes(
+          store.state.profile.user._id
+        )
+    );
 
     onBeforeMount(async () => {
       await store.dispatch("loadProfileUser", username).catch(() => {
         // noop
       });
+      isMe.value = username === store.state.userLoggedIn.username;
     });
 
     const user = computed(() => store.state.profile.user);
+
+    const onFollowClick = () => {
+      if (isFollowing.value) {
+        store
+          .dispatch("unfollowUser", username)
+          .then(() => store.dispatch("loadProfileUser", username));
+      } else {
+        store
+          .dispatch("followUser", username)
+          .then(() => store.dispatch("loadProfileUser", username));
+      }
+    };
+
     return {
+      isMe,
+      isFollowing,
       username,
       user,
       imageUrl,
+      onFollowClick,
     };
   },
 };

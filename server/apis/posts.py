@@ -210,6 +210,12 @@ def _populate(post):
     if posted_by:
         posted_by["_id"] = str(posted_by["_id"])
         del posted_by["hashed_password"]
+        if "following" not in posted_by:
+            posted_by["following"] = []
+        posted_by["following"] = [str(_id) for _id in posted_by["following"]]
+        if "followers" not in posted_by:
+            posted_by["followers"] = []
+        posted_by["followers"] = [str(_id) for _id in posted_by["followers"]]
         post["posted_by"] = posted_by
     if "retweeted_post" in post and post["retweeted_post"]:
         post["retweeted_post"] = _populate(

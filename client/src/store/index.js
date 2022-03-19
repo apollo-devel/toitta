@@ -182,6 +182,16 @@ export default createStore({
         commit("setProfileUser", resp.data);
       });
     },
+    followUser({ commit }, username) {
+      return axios.post(`/api/users/${username}/follow`).then((resp) => {
+        commit("setUserLoggedIn", resp.data);
+      });
+    },
+    unfollowUser({ commit }, username) {
+      return axios.delete(`/api/users/${username}/follow`).then((resp) => {
+        commit("setUserLoggedIn", resp.data);
+      });
+    },
   },
   modules: {},
 });
