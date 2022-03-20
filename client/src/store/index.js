@@ -4,6 +4,16 @@ import { createStore } from "vuex";
 
 import router from "@/router";
 
+function defaultErrorHandler(error) {
+  if (error.response.status === 401) {
+    router.push("/login");
+  } else {
+    UIkit.notification(error.response.data.error.message, {
+      status: "danger",
+    });
+  }
+}
+
 export default createStore({
   state: {
     userLoggedIn: undefined,
@@ -17,180 +27,123 @@ export default createStore({
   },
   getters: {},
   mutations: {
-    setUserLoggedIn(state, user) {
-      state.userLoggedIn = user;
+    setUserLoggedIn(state, args) {
+      state.userLoggedIn = args.user;
     },
-    setPosts(state, posts) {
-      state.posts = posts;
+    setPosts(state, args) {
+      state.posts = args.posts;
     },
-    updatePost(state, post) {
-      const orig = state.posts.find((p) => p._id === post._id);
+    prependPost(state, args) {
+      state.posts.unshift(args.post);
+    },
+    updatePost(state, args) {
+      const orig = state.posts.find((p) => p._id === args.post._id);
       if (orig) {
-        Object.assign(orig, post);
+        Object.assign(orig, args.post);
       }
       state.posts
-        .filter((p) => p.retweeted_post && p.retweeted_post._id === post._id)
-        .forEach((p) => Object.assign(p.retweeted_post, post));
+        .filter(
+          (p) => p.retweeted_post && p.retweeted_post._id === args.post._id
+        )
+        .forEach((p) => Object.assign(p.retweeted_post, args.post));
     },
-    setProfileUser(state, user) {
-      state.profile.user = user;
+    setProfileUser(state, args) {
+      state.profile.user = args.user;
     },
   },
   actions: {
-    registerUser({ commit }, user) {
-      axios
-        .post("/api/users", user)
-        .then((resp) => {
-          commit("setUserLoggedIn", resp.data);
-          router.push("/");
-        })
-        .catch((error) => {
-          UIkit.notification(error.response.data.error.message, {
-            status: "danger",
-          });
-        });
+    async registerUser({ commit }, args) {
+      return axios.post("/api/users", args.user).then((resp) => {
+        commit("setUserLoggedIn", { user: resp.data });
+      });
     },
-    login({ commit }, credential) {
-      axios
-        .post("/api/login", credential)
-        .then((resp) => {
-          commit("setUserLoggedIn", resp.data);
-          router.push("/");
-        })
-        .catch((error) => {
-          UIkit.notification(error.response.data.error.message, {
-            status: "danger",
-          });
-        });
+    async login({ commit }, args) {
+      return axios.post("/api/login", args.credential).then((resp) => {
+        commit("setUserLoggedIn", { user: resp.data });
+      });
     },
-    logout({ commit }) {
-      axios
-        .post("/api/logout")
-        .then(() => {
-          commit("setUserLoggedIn", undefined);
-          router.push("/login");
-        })
-        .catch((error) => {
-          UIkit.notification(error.response.data.error.message, {
-            status: "danger",
-          });
-        });
+    async logout({ commit }) {
+      return axios.post("/api/logout").then(() => {
+        commit("setUserLoggedIn", { user: undefined });
+      });
     },
     async loginCheck({ commit }) {
-      const resp = await axios.get("/api/session");
-      commit("setUserLoggedIn", resp.data);
+      return axios.get("/api/session").then((resp) => {
+        commit("setUserLoggedIn", { user: resp.data });
+      });
     },
-    async createPost({ state }, content) {
+    async createPost({ commit, state }, args) {
       const body = {
-        content,
+        content: args.content,
         posted_by: state.userLoggedIn._id,
       };
-      return axios
-        .post("/api/posts", body)
-        .then(() => {
-          return true;
-        })
-        .catch((error) => {
-          UIkit.notification(error.response.data.error.message, {
-            status: "danger",
-          });
-          return false;
-        });
+      return axios.post("/api/posts", body).then((resp) => {
+        commit("prependPost", { post: resp.data });
+      });
     },
-    loadPosts({ commit }) {
-      axios
+    async loadPosts({ commit }) {
+      return axios
         .get("/api/posts")
         .then((resp) => {
-          commit("setPosts", resp.data);
+          commit("setPosts", { posts: resp.data });
         })
-        .catch((error) => {
-          if (error.response.status === 401) {
-            router.push("/login");
-          } else {
-            UIkit.notification(error.response.data.error.message, {
-              status: "danger",
-            });
-          }
-        });
+        .catch(defaultErrorHandler);
     },
-    likePost({ commit }, post) {
-      axios
-        .post(`/api/posts/${post._id}/like`)
+    async likePost({ commit }, args) {
+      return axios
+        .post(`/api/posts/${args.post._id}/like`)
         .then((resp) => {
-          commit("updatePost", resp.data);
+          commit("updatePost", { post: resp.data });
         })
-        .catch((error) => {
-          if (error.response.status === 401) {
-            router.push("/login");
-          } else {
-            UIkit.notification(error.response.data.error.message, {
-              status: "danger",
-            });
-          }
-        });
+        .catch(defaultErrorHandler);
     },
-    unlikePost({ commit }, post) {
-      axios
-        .delete(`/api/posts/${post._id}/like`)
+    async unlikePost({ commit }, args) {
+      return axios
+        .delete(`/api/posts/${args.post._id}/like`)
         .then((resp) => {
-          commit("updatePost", resp.data);
+          commit("updatePost", { post: resp.data });
         })
-        .catch((error) => {
-          if (error.response.status === 401) {
-            router.push("/login");
-          } else {
-            UIkit.notification(error.response.data.error.message, {
-              status: "danger",
-            });
-          }
-        });
+        .catch(defaultErrorHandler);
     },
-    retweetPost({ commit }, post) {
-      axios
-        .post(`/api/posts/${post._id}/retweet`)
+    async retweetPost({ commit }, args) {
+      return axios
+        .post(`/api/posts/${args.post._id}/retweet`)
         .then((resp) => {
-          commit("updatePost", resp.data);
+          commit("updatePost", { post: resp.data });
         })
-        .catch((error) => {
-          if (error.response.status === 401) {
-            router.push("/login");
-          } else {
-            UIkit.notification(error.response.data.error.message, {
-              status: "danger",
-            });
-          }
-        });
+        .catch(defaultErrorHandler);
     },
-    unretweetPost({ commit }, post) {
-      axios
-        .delete(`/api/posts/${post._id}/retweet`)
+    async unretweetPost({ commit }, args) {
+      return axios
+        .delete(`/api/posts/${args.post._id}/retweet`)
         .then((resp) => {
-          commit("updatePost", resp.data);
+          commit("updatePost", { post: resp.data });
         })
-        .catch((error) => {
-          if (error.response.status === 401) {
-            router.push("/login");
-          } else {
-            UIkit.notification(error.response.data.error.message, {
-              status: "danger",
-            });
-          }
-        });
+        .catch(defaultErrorHandler);
     },
-    loadProfileUser({ commit }, username) {
-      return axios.get(`/api/users/${username}`).then((resp) => {
-        commit("setProfileUser", resp.data);
-      });
+    async loadProfileUser({ commit }, args) {
+      return axios
+        .get(`/api/users/${args.username}`)
+        .then((resp) => {
+          commit("setProfileUser", { user: resp.data });
+        })
+        .catch(defaultErrorHandler);
     },
-    followUser({ commit }, username) {
-      return axios.post(`/api/users/${username}/follow`).then((resp) => {
-        commit("setUserLoggedIn", resp.data);
-      });
+    async followUser({ commit }, args) {
+      return axios
+        .post(`/api/users/${args.username}/follow`)
+        .then((resp) => {
+          commit("setUserLoggedIn", { user: resp.data });
+        })
+        .catch(defaultErrorHandler);
     },
-    unfollowUser({ commit }, username) {
-      return axios.delete(`/api/users/${username}/follow`).then((resp) => {
-        commit("setUserLoggedIn", resp.data);
-      });
+    async unfollowUser({ commit }, args) {
+      return axios
+        .delete(`/api/users/${args.username}/follow`)
+        .then((resp) => {
+          commit("setUserLoggedIn", { user: resp.data });
+        })
+        .catch(defaultErrorHandler);
     },
   },
   modules: {},

@@ -2,7 +2,7 @@ import pymongo
 from bson.objectid import ObjectId
 from flask import jsonify, request, session
 
-from apis import login_required
+from apis import error, login_required
 from main import app
 from models.like import Like
 from models.post import Post
@@ -17,24 +17,23 @@ def create_post():
 
     error_message = Post.validate(body)
     if error_message:
-        return jsonify({"error": {"message": error_message}}), 400
+        return error(error_message)
 
     if session["user"]["_id"] != body["posted_by"]:
-        return jsonify({"error": {"message": "投稿者が不正です"}}), 400
+        return error("投稿者が不正です")
 
     last = Post._collection.find_one(
         {"posted_by": body["posted_by"]}, sort=[("created_at", pymongo.DESCENDING)]
     )
 
     if last and last["content"] == body["content"]:
-        return jsonify({"error": {"message": "すでに同じ内容のツイートが投稿されています"}}), 400
+        return error("すでに同じ内容のツイートが投稿されています")
 
     post = Post(content=body["content"], posted_by=body["posted_by"])
 
     post.create()
 
-    body["_id"] = str(post._id)
-    return jsonify(body)
+    return jsonify(_populate(vars(post)))
 
 
 @app.route("/api/posts", methods=["GET"])
@@ -49,11 +48,11 @@ def list_posts():
         term = {"$gte": results[-1]["created_at"], "$lte": results[0]["created_at"]}
 
         liked_posts = {
-            str(like["post"])
+            like["post"]
             for like in Like._collection.find({"liked_by": user_id, "posted_at": term})
         }
         retweeted_posts = {
-            str(retweet["post"])
+            retweet["post"]
             for retweet in Retweet._collection.find(
                 {"retweeted_by": user_id, "posted_at": term}
             )
@@ -90,7 +89,7 @@ def list_posts():
 def like_post(post_id):
     post = Post._collection.find_one({"_id": ObjectId(post_id)})
     if not post:
-        return jsonify({"error": {"message": "投稿が存在しません"}}), 404
+        return error("投稿が存在しません", 404)
     user_id = session["user"]["_id"]
     like = Like._collection.find_one(
         {"post": ObjectId(post_id), "liked_by": ObjectId(user_id)}
@@ -119,7 +118,7 @@ def like_post(post_id):
 def unlike_post(post_id):
     post = Post._collection.find_one({"_id": ObjectId(post_id)})
     if not post:
-        return jsonify({"error": {"message": "投稿が存在しません"}}), 404
+        return error("投稿が存在しません", 404)
     user_id = session["user"]["_id"]
     like = Like._collection.find_one_and_delete(
         {"post": ObjectId(post_id), "liked_by": ObjectId(user_id)}
@@ -143,7 +142,7 @@ def unlike_post(post_id):
 def retweet_post(post_id):
     post = Post._collection.find_one({"_id": ObjectId(post_id)})
     if not post:
-        return jsonify({"error": {"message": "投稿が存在しません"}}), 404
+        return error("投稿が存在しません", 404)
     user_id = session["user"]["_id"]
     retweet = Retweet._collection.find_one(
         {"post": ObjectId(post_id), "retweeted_by": ObjectId(user_id)}
@@ -179,7 +178,7 @@ def retweet_post(post_id):
 def unretweet_post(post_id):
     post = Post._collection.find_one({"_id": ObjectId(post_id)})
     if not post:
-        return jsonify({"error": {"message": "投稿が存在しません"}}), 404
+        return error("投稿が存在しません", 404)
     user_id = session["user"]["_id"]
     retweet = Retweet._collection.find_one_and_delete(
         {"post": ObjectId(post_id), "retweeted_by": ObjectId(user_id)}
@@ -205,17 +204,9 @@ def unretweet_post(post_id):
 def _populate(post):
     if not post:
         return post
-    post["_id"] = str(post["_id"])
     posted_by = User._collection.find_one({"_id": post["posted_by"]})
     if posted_by:
-        posted_by["_id"] = str(posted_by["_id"])
         del posted_by["hashed_password"]
-        if "following" not in posted_by:
-            posted_by["following"] = []
-        posted_by["following"] = [str(_id) for _id in posted_by["following"]]
-        if "followers" not in posted_by:
-            posted_by["followers"] = []
-        posted_by["followers"] = [str(_id) for _id in posted_by["followers"]]
         post["posted_by"] = posted_by
     if "retweeted_post" in post and post["retweeted_post"]:
         post["retweeted_post"] = _populate(

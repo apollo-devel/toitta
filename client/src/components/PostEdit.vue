@@ -20,6 +20,7 @@
 </template>
 
 <script>
+import UIkit from "uikit";
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
 
@@ -47,11 +48,16 @@ export default {
     const onSubmit = (e) => {
       e.preventDefault();
 
-      store.dispatch("createPost", content.value).then((success) => {
-        if (success) {
+      store
+        .dispatch("createPost", { content: content.value })
+        .then(() => {
           content.value = "";
-        }
-      });
+        })
+        .catch((error) => {
+          UIkit.notification(error.response.data.error.message, {
+            status: "danger",
+          });
+        });
     };
 
     const url = imageUrl(store.state.userLoggedIn);

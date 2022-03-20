@@ -33,9 +33,13 @@
         <div>@{{ user.username }}</div>
         <div class="uk-margin-small-top">{{ user.description }}</div>
         <div class="uk-margin-small-top">
-          <span class="uk-text-bold">{{ user.following.length }}</span>
+          <span class="uk-text-bold">{{
+            user.following ? user.following.length : 0
+          }}</span>
           <span class="uk-margin-right">フォロー中</span>
-          <span class="uk-text-bold">{{ user.followers.length }}</span>
+          <span class="uk-text-bold">{{
+            user.followers ? user.followers.length : 0
+          }}</span>
           <span>フォロワー</span>
         </div>
       </div>
@@ -83,7 +87,7 @@ export default {
     );
 
     onBeforeMount(async () => {
-      await store.dispatch("loadProfileUser", username).catch(() => {
+      await store.dispatch("loadProfileUser", { username }).catch(() => {
         // noop
       });
       isMe.value = username === store.state.userLoggedIn.username;
@@ -94,11 +98,11 @@ export default {
     const onFollowClick = () => {
       if (isFollowing.value) {
         store
-          .dispatch("unfollowUser", username)
+          .dispatch("unfollowUser", { username })
           .then(() => store.dispatch("loadProfileUser", username));
       } else {
         store
-          .dispatch("followUser", username)
+          .dispatch("followUser", { username })
           .then(() => store.dispatch("loadProfileUser", username));
       }
     };

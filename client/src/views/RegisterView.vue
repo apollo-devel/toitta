@@ -71,16 +71,24 @@
         <input class="uk-button uk-button-primary" type="submit" value="登録" />
       </div>
     </form>
+    <div>
+      アカウントがある場合は
+      <router-link to="/login">ログイン</router-link>
+      してください
+    </div>
   </div>
 </template>
 
 <script>
+import UIkit from "uikit";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 export default {
   setup() {
     const store = useStore();
+    const router = useRouter();
 
     const displayName = ref("");
     const username = ref("");
@@ -97,7 +105,14 @@ export default {
         email: email.value,
       };
 
-      store.dispatch("registerUser", user);
+      store
+        .dispatch("registerUser", { user })
+        .then(() => router.push("/"))
+        .catch((error) => {
+          UIkit.notification(error.response.data.error.message, {
+            status: "danger",
+          });
+        });
     };
     return {
       displayName,

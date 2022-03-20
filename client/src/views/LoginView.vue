@@ -37,16 +37,24 @@
         />
       </div>
     </form>
+    <div>
+      アカウントがない場合は
+      <router-link to="/register">アカウント登録</router-link>
+      してください
+    </div>
   </div>
 </template>
 
 <script>
+import UIkit from "uikit";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 export default {
   setup() {
     const store = useStore();
+    const router = useRouter();
 
     const identifier = ref("");
     const password = ref("");
@@ -58,7 +66,14 @@ export default {
         password: password.value,
       };
 
-      store.dispatch("login", credential);
+      store
+        .dispatch("login", { credential })
+        .then(() => router.push("/"))
+        .catch((error) => {
+          UIkit.notification(error.response.data.error.message, {
+            status: "danger",
+          });
+        });
     };
     return {
       identifier,

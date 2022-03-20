@@ -65,17 +65,17 @@ export default {
 
     const onLikeClick = () => {
       if (displayPost.liking) {
-        store.dispatch("unlikePost", displayPost);
+        store.dispatch("unlikePost", { post: displayPost });
       } else {
-        store.dispatch("likePost", displayPost);
+        store.dispatch("likePost", { post: displayPost });
       }
     };
 
     const onRetweetClick = () => {
       if (displayPost.retweeting) {
-        store.dispatch("unretweetPost", displayPost);
+        store.dispatch("unretweetPost", { post: displayPost });
       } else {
-        store.dispatch("retweetPost", displayPost);
+        store.dispatch("retweetPost", { post: displayPost });
       }
     };
     return {

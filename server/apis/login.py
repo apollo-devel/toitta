@@ -1,6 +1,6 @@
 from flask import jsonify, request, session
 
-from apis import login_required
+from apis import error, login_required
 from main import app
 from models.user import User
 
@@ -9,9 +9,9 @@ from models.user import User
 def login():
     body = request.json
     if "identifier" not in body or not body["identifier"]:
-        return jsonify({"error": {"message": "ユーザー名 または メールアドレスは必須です。"}}), 400
+        return error("ユーザー名 または メールアドレスは必須です。")
     if "password" not in body or not body["password"]:
-        return jsonify({"error": {"message": "パスワードは必須です。"}}), 400
+        return error("パスワードは必須です。")
 
     identifier = body["identifier"]
     user = User._collection.find_one(
@@ -19,22 +19,12 @@ def login():
     )
 
     if not user:
-        return jsonify({"error": {"message": "ユーザーが存在しません。"}}), 400
+        return error("ユーザーが存在しません。")
 
     hashed_password = User.encrypt(body["password"])
     if user["hashed_password"] != hashed_password:
-        return jsonify({"error": {"message": "パスワードが一致しません。"}}), 400
-
-    del user["hashed_password"]
-
-    user["_id"] = str(user["_id"])
-    if "following" not in user:
-        user["following"] = []
-    user["following"] = [str(_id) for _id in user["following"]]
-    if "followers" not in user:
-        user["followers"] = []
-    user["followers"] = [str(_id) for _id in user["followers"]]
-    session["user"] = user
+        return error("パスワードが一致しません。")
+    User.set_session_user(user)
     return jsonify(user)
 
 
