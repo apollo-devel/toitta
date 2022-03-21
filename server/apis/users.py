@@ -27,10 +27,9 @@ def register():
         email=body["email"],
     )
     user.create()
-    del body["password"]
     user = vars(user)
     User.set_session_user(user)
-    return jsonify(body)
+    return jsonify(user)
 
 
 @app.route("/api/users/<username>", methods=["GET"])
@@ -86,3 +85,33 @@ def unfollow_user(username):
     )
     User.set_session_user(me)
     return jsonify(me)
+
+
+@app.route("/api/users/<username>/following", methods=["GET"])
+@login_required()
+def list_following_users(username):
+    user = User._collection.find_one({"username": username})
+    if not user:
+        return error("ユーザーが存在しません。", 404)
+    result = []
+    for user_id in user.get("following", []):
+        u = User._collection.find_one({"_id": ObjectId(user_id)})
+        if u:
+            del u["hashed_password"]
+            result.append(u)
+    return jsonify(result)
+
+
+@app.route("/api/users/<username>/followers", methods=["GET"])
+@login_required()
+def list_followers(username):
+    user = User._collection.find_one({"username": username})
+    if not user:
+        return error("ユーザーが存在しません。", 404)
+    result = []
+    for user_id in user.get("followers", []):
+        u = User._collection.find_one({"_id": ObjectId(user_id)})
+        if u:
+            del u["hashed_password"]
+            result.append(u)
+    return jsonify(result)

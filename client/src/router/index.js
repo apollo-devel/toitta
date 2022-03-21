@@ -16,6 +16,18 @@ const routes = [
     component: () => import("../views/ProfileView.vue"),
   },
   {
+    path: "/profile/:username/following",
+    name: "following",
+    meta: { loginRequired: true, followers: false },
+    component: () => import("../views/FollowerView.vue"),
+  },
+  {
+    path: "/profile/:username/followers",
+    name: "followers",
+    meta: { loginRequired: true, followers: true },
+    component: () => import("../views/FollowerView.vue"),
+  },
+  {
     path: "/register",
     name: "register",
     meta: { layout: "simple-layout" },

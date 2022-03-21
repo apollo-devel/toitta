@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { computed, onBeforeMount, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
@@ -74,7 +74,7 @@ export default {
     const route = useRoute();
     const store = useStore();
 
-    const username = route.params.username
+    let username = route.params.username
       ? route.params.username
       : store.state.userLoggedIn.username;
     const isMe = ref(false);
@@ -86,12 +86,21 @@ export default {
         )
     );
 
-    onBeforeMount(async () => {
-      await store.dispatch("loadProfileUser", { username }).catch(() => {
-        // noop
-      });
-      isMe.value = username === store.state.userLoggedIn.username;
-    });
+    watch(
+      () => route.params.username,
+      async () => {
+        username = route.params.username
+          ? route.params.username
+          : store.state.userLoggedIn.username;
+        await store.dispatch("loadProfileUser", { username }).catch(() => {
+          // noop
+        });
+        isMe.value = username === store.state.userLoggedIn.username;
+      },
+      {
+        immediate: true,
+      }
+    );
 
     const user = computed(() => store.state.profile.user);
 
@@ -99,11 +108,11 @@ export default {
       if (isFollowing.value) {
         store
           .dispatch("unfollowUser", { username })
-          .then(() => store.dispatch("loadProfileUser", username));
+          .then(() => store.dispatch("loadProfileUser", { username }));
       } else {
         store
           .dispatch("followUser", { username })
-          .then(() => store.dispatch("loadProfileUser", username));
+          .then(() => store.dispatch("loadProfileUser", { username }));
       }
     };
 

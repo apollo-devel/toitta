@@ -23,6 +23,7 @@ export default createStore({
         display_name: "",
         username: "",
       },
+      users: [],
     },
   },
   getters: {},
@@ -49,6 +50,9 @@ export default createStore({
     },
     setProfileUser(state, args) {
       state.profile.user = args.user;
+    },
+    setProfileUsers(state, args) {
+      state.profile.users = args.users;
     },
   },
   actions: {
@@ -142,6 +146,22 @@ export default createStore({
         .delete(`/api/users/${args.username}/follow`)
         .then((resp) => {
           commit("setUserLoggedIn", { user: resp.data });
+        })
+        .catch(defaultErrorHandler);
+    },
+    async loadFollowers({ commit }, args) {
+      return axios
+        .get(`/api/users/${args.username}/followers`)
+        .then((resp) => {
+          commit("setProfileUsers", { users: resp.data });
+        })
+        .catch(defaultErrorHandler);
+    },
+    async loadFollowingUsers({ commit }, args) {
+      return axios
+        .get(`/api/users/${args.username}/following`)
+        .then((resp) => {
+          commit("setProfileUsers", { users: resp.data });
         })
         .catch(defaultErrorHandler);
     },
