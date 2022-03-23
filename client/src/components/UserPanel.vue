@@ -1,20 +1,18 @@
 <template>
   <div>
     <div class="uk-flex uk-flex-top">
-      <img :src="url" class="uk-border-circle avatar" />
+      <avatar-pic :user="user"></avatar-pic>
       <div
         class="uk-flex uk-flex-left uk-flex-column uk-flex-1 uk-margin-small-left"
       >
         <div class="uk-flex uk-flex-row uk-flex-center">
           <div class="uk-flex-1">
-            <div class="uk-text-bold">{{ user.display_name }}</div>
+            <display-name :user="user"></display-name>
             <div>
-              <span class="uk-text-muted uk-margin-small-right"
-                >@{{ user.username }}</span
-              >
-              <span class="uk-label" v-if="isFollowed"
-                >フォローされています</span
-              >
+              <username-link :user="user"></username-link>
+              <span class="uk-label" v-if="isFollowed">
+                フォローされています
+              </span>
             </div>
           </div>
           <div>
@@ -41,9 +39,16 @@
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
 
-import { imageUrl } from "@/functions/avatar.js";
+import AvatarPic from "@/components/AvatarPic.vue";
+import DisplayName from "@/components/DisplayName.vue";
+import UsernameLink from "@/components/UsernameLink.vue";
 
 export default {
+  components: {
+    AvatarPic,
+    DisplayName,
+    UsernameLink,
+  },
   props: {
     user: Object,
   },
@@ -69,10 +74,8 @@ export default {
       }
     };
 
-    const url = imageUrl(props.user);
     return {
       isMe,
-      url,
       isFollowing,
       isFollowed,
       onFollowClick,
@@ -80,11 +83,3 @@ export default {
   },
 };
 </script>
-
-
-<style scoped>
-.avatar {
-  width: 50px;
-  height: 50px;
-}
-</style>

@@ -4,10 +4,11 @@
       {{ username }}
     </h3>
     <div class="cover uk-margin-right"></div>
-    <img
-      :src="imageUrl(user)"
-      class="uk-position-absolute uk-border-circle uk-margin-small-left avatar"
-    />
+    <avatar-pic
+      :user="user"
+      size="large"
+      class="uk-position-absolute uk-margin-small-left large-avatar"
+    ></avatar-pic>
     <div class="uk-width-1-1 uk-position-absolute" v-if="user._id">
       <div
         class="uk-flex uk-flex-row uk-flex-top uk-margin-right uk-margin-small-top buttons"
@@ -33,14 +34,24 @@
         <div>@{{ user.username }}</div>
         <div class="uk-margin-small-top">{{ user.description }}</div>
         <div class="uk-margin-small-top">
-          <span class="uk-text-bold">{{
-            user.following ? user.following.length : 0
-          }}</span>
-          <span class="uk-margin-right">フォロー中</span>
-          <span class="uk-text-bold">{{
-            user.followers ? user.followers.length : 0
-          }}</span>
-          <span>フォロワー</span>
+          <router-link
+            :to="'/profile/' + username + '/following'"
+            class="uk-link-text uk-margin-right"
+          >
+            <span class="uk-text-bold">{{
+              user.following ? user.following.length : 0
+            }}</span>
+            <span>フォロー中</span>
+          </router-link>
+          <router-link
+            :to="'/profile/' + username + '/followers'"
+            class="uk-link-text"
+          >
+            <span class="uk-text-bold">{{
+              user.followers ? user.followers.length : 0
+            }}</span>
+            <span>フォロワー</span>
+          </router-link>
         </div>
       </div>
       <div class="uk-margin-top uk-margin-right">
@@ -67,16 +78,17 @@ import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
-import { imageUrl } from "@/functions/avatar.js";
+import AvatarPic from "@/components/AvatarPic.vue";
 
 export default {
+  components: {
+    AvatarPic,
+  },
   setup() {
     const route = useRoute();
     const store = useStore();
 
-    let username = route.params.username
-      ? route.params.username
-      : store.state.userLoggedIn.username;
+    let username = undefined;
     const isMe = ref(false);
     const isFollowing = computed(
       () =>
@@ -85,24 +97,27 @@ export default {
           store.state.profile.user._id
         )
     );
+    const user = computed(() => store.state.profile.user);
 
     watch(
       () => route.params.username,
-      async () => {
+      () => {
         username = route.params.username
           ? route.params.username
           : store.state.userLoggedIn.username;
-        await store.dispatch("loadProfileUser", { username }).catch(() => {
-          // noop
-        });
-        isMe.value = username === store.state.userLoggedIn.username;
+        store
+          .dispatch("loadProfileUser", { username })
+          .then(() => {
+            isMe.value = username === store.state.userLoggedIn.username;
+          })
+          .catch(() => {
+            // noop
+          });
       },
       {
         immediate: true,
       }
     );
-
-    const user = computed(() => store.state.profile.user);
 
     const onFollowClick = () => {
       if (isFollowing.value) {
@@ -121,7 +136,6 @@ export default {
       isFollowing,
       username,
       user,
-      imageUrl,
       onFollowClick,
     };
   },
@@ -134,11 +148,8 @@ export default {
   height: 180px;
 }
 
-.avatar {
-  width: 132px;
-  height: 132px;
+.large-avatar {
   bottom: -66px;
-  border: 4px solid #fff;
 }
 
 .buttons {

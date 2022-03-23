@@ -1,7 +1,7 @@
 <template>
   <form @submit="onSubmit">
     <div class="uk-flex uk-flex-top">
-      <img :src="url" class="uk-border-circle avatar" />
+      <avatar-pic :user="user"></avatar-pic>
       <textarea
         v-model="content"
         placeholder="いまどうしてる？"
@@ -24,9 +24,12 @@ import UIkit from "uikit";
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
 
-import { imageUrl } from "@/functions/avatar.js";
+import AvatarPic from "@/components/AvatarPic.vue";
 
 export default {
+  components: {
+    AvatarPic,
+  },
   setup() {
     const store = useStore();
 
@@ -60,12 +63,12 @@ export default {
         });
     };
 
-    const url = imageUrl(store.state.userLoggedIn);
+    const user = computed(() => store.state.userLoggedIn);
     return {
       content,
       onSubmit,
       isInvalid,
-      url,
+      user,
     };
   },
 };
@@ -77,10 +80,5 @@ export default {
   border: 0;
   height: 100px;
   margin-top: 5px;
-}
-
-.avatar {
-  width: 50px;
-  height: 50px;
 }
 </style>

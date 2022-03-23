@@ -10,12 +10,6 @@ const routes = [
     component: HomeView,
   },
   {
-    path: "/profile/:username?",
-    name: "profile",
-    meta: { loginRequired: true },
-    component: () => import("../views/ProfileView.vue"),
-  },
-  {
     path: "/profile/:username/following",
     name: "following",
     meta: { loginRequired: true, followers: false },
@@ -26,6 +20,12 @@ const routes = [
     name: "followers",
     meta: { loginRequired: true, followers: true },
     component: () => import("../views/FollowerView.vue"),
+  },
+  {
+    path: "/profile/:username?",
+    name: "profile",
+    meta: { loginRequired: true },
+    component: () => import("../views/ProfileView.vue"),
   },
   {
     path: "/register",

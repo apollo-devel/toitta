@@ -1,21 +1,25 @@
 <template>
   <div class="uk-margin-right">
     <div class="uk-margin-small-left uk-margin-small-bottom" v-if="isRetweet">
-      {{ post.posted_by.display_name }}がリツイート
+      <router-link
+        :to="'/profile/' + post.posted_by.username"
+        class="uk-link-text"
+      >
+        {{ post.posted_by.display_name }}がリツイート
+      </router-link>
     </div>
     <div class="uk-flex uk-flex-top">
-      <img :src="url" class="uk-border-circle avatar" />
+      <avatar-pic :user="displayPost.posted_by"></avatar-pic>
       <div class="uk-flex uk-flex-left uk-flex-column uk-margin-left uk-flex-1">
         <div class="uk-flex uk-flex-middle uk-flex-row">
-          <span class="uk-text-bold">{{
-            displayPost.posted_by.display_name
-          }}</span>
-          <span class="uk-margin-small-left uk-text-muted"
-            >@{{ displayPost.posted_by.username }}</span
-          >
-          <span class="uk-margin-small-left uk-text-muted">{{
-            displayPost.created_at
-          }}</span>
+          <display-name :user="displayPost.posted_by"></display-name>
+          <username-link
+            :user="displayPost.posted_by"
+            class="uk-margin-small-left"
+          ></username-link>
+          <span class="uk-margin-small-left uk-text-muted">
+            {{ displayPost.created_at }}
+          </span>
           <span class="uk-flex-1"></span>
           <span uk-icon="icon: close; ratio: 0.8"></span>
         </div>
@@ -49,9 +53,16 @@
 <script>
 import { useStore } from "vuex";
 
-import { imageUrl } from "@/functions/avatar.js";
+import AvatarPic from "@/components/AvatarPic.vue";
+import DisplayName from "@/components/DisplayName.vue";
+import UsernameLink from "@/components/UsernameLink.vue";
 
 export default {
+  components: {
+    AvatarPic,
+    DisplayName,
+    UsernameLink,
+  },
   props: {
     post: Object,
   },
@@ -60,8 +71,6 @@ export default {
 
     const isRetweet = Boolean(props.post.retweeted_post);
     const displayPost = isRetweet ? props.post.retweeted_post : props.post;
-
-    const url = imageUrl(displayPost.posted_by);
 
     const onLikeClick = () => {
       if (displayPost.liking) {
@@ -81,7 +90,6 @@ export default {
     return {
       isRetweet,
       displayPost,
-      url,
       onLikeClick,
       onRetweetClick,
     };
@@ -90,11 +98,6 @@ export default {
 </script>
 
 <style scoped>
-.avatar {
-  width: 50px;
-  height: 50px;
-}
-
 .like.active {
   color: red;
 }

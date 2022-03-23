@@ -1,8 +1,16 @@
 <template>
   <div class="uk-margin-right">
     <div class="uk-margin-top uk-margin-bottom">
-      <div class="uk-text-bold">{{ user.display_name }}</div>
-      <div class="uk-text-muted uk-text-small">@{{ user.username }}</div>
+      <div class="uk-text-bold">
+        <router-link :to="'/profile/' + user.username" class="uk-link-text">
+          {{ user.display_name }}
+        </router-link>
+      </div>
+      <div class="uk-text-muted uk-text-small">
+        <router-link :to="'/profile/' + user.username" class="uk-link-text">
+          @{{ user.username }}
+        </router-link>
+      </div>
     </div>
     <div>
       <ul uk-tab class="uk-child-width-expand">
@@ -48,8 +56,12 @@ export default {
 
     watch(
       () => route.meta.followers,
-      async () => {
-        isFollowers = route.meta.followers;
+      (followers) => {
+        if (followers === undefined) {
+          // /profile/XXXX/followers 等の遷移で反応することがあるため回避
+          return;
+        }
+        isFollowers = followers;
         if (isFollowers) {
           store.dispatch("loadFollowers", { username });
         } else {
