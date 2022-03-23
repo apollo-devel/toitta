@@ -28,6 +28,12 @@ const routes = [
     component: () => import("../views/ProfileView.vue"),
   },
   {
+    path: "/posts/:postId",
+    name: "posts",
+    meta: { loginRequired: true },
+    component: () => import("../views/PostsView.vue"),
+  },
+  {
     path: "/register",
     name: "register",
     meta: { layout: "simple-layout" },

@@ -211,7 +211,23 @@ def unretweet_post(post_id):
         return jsonify(_populate(post))
 
 
-def _populate(post):
+@app.route("/api/posts/<post_id>", methods=["GET"])
+@login_required()
+def get_post(post_id):
+    post = Post._collection.find_one({"_id": ObjectId(post_id)})
+    if not post:
+        return error("投稿が存在しません", 404)
+    post = _populate(post, True)
+    replies = []
+    for reply in Post._collection.find(
+        {"reply_to": ObjectId(post_id)}, sort=[("created_at", pymongo.ASCENDING)]
+    ):
+        replies.append(_populate(reply, True))
+    post["replies"] = replies
+    return jsonify(post)
+
+
+def _populate(post, set_liking_and_retweeting=False):
     if not post:
         return post
     posted_by = User._collection.find_one({"_id": post["posted_by"]})
@@ -220,10 +236,25 @@ def _populate(post):
         post["posted_by"] = posted_by
     if "retweeted_post" in post and post["retweeted_post"]:
         post["retweeted_post"] = _populate(
-            Post._collection.find_one({"_id": post["retweeted_post"]})
+            Post._collection.find_one({"_id": post["retweeted_post"]}),
+            set_liking_and_retweeting,
         )
     if "reply_to" in post and post["reply_to"]:
         post["reply_to"] = _populate(
-            Post._collection.find_one({"_id": post["reply_to"]})
+            Post._collection.find_one({"_id": post["reply_to"]}),
+            set_liking_and_retweeting,
+        )
+    if set_liking_and_retweeting:
+        user_id = ObjectId(session["user"]["_id"])
+        post_id = post["_id"]
+        if not isinstance(post_id, ObjectId):
+            post_id = ObjectId(post_id)
+        post["liking"] = (
+            Like._collection.find_one({"liked_by": user_id, "post": post_id})
+            is not None
+        )
+        post["retweeting"] = (
+            Retweet._collection.find_one({"retweeted_by": user_id, "post": post_id})
+            is not None
         )
     return post

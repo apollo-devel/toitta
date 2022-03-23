@@ -30,11 +30,19 @@
           <span class="uk-flex-1"></span>
           <span uk-icon="icon: close; ratio: 0.8"></span>
         </div>
-        <div v-if="isReply">
+        <div v-if="isReply && !disableLink">
           <router-link
-            :to="'/profile/' + displayPost.reply_to.posted_by.username"
+            :to="
+              displayPost.reply_to
+                ? '/profile/' + displayPost.reply_to.posted_by.username
+                : ''
+            "
           >
-            @{{ displayPost.reply_to.posted_by.username }}
+            @{{
+              displayPost.reply_to
+                ? displayPost.reply_to.posted_by.username
+                : ""
+            }}
           </router-link>
           へ返信
         </div>
@@ -97,10 +105,12 @@ export default {
   setup(props, context) {
     const store = useStore();
 
-    const isRetweet = Boolean(props.post && props.post.retweeted_post);
-    const isReply = Boolean(props.post && props.post.reply_to);
+    const isRetweet = computed(() =>
+      Boolean(props.post && props.post.retweeted_post)
+    );
+    const isReply = computed(() => Boolean(props.post && props.post.reply_to));
     const displayPost = computed(() =>
-      isRetweet ? props.post.retweeted_post : props.post
+      isRetweet.value ? props.post.retweeted_post : props.post
     );
 
     const onLikeClick = () => {

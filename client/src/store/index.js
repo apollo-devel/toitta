@@ -26,6 +26,7 @@ export default createStore({
       users: [],
     },
     replyTo: undefined,
+    post: undefined,
   },
   getters: {},
   mutations: {
@@ -34,6 +35,9 @@ export default createStore({
     },
     setPosts(state, args) {
       state.posts = args.posts;
+    },
+    setPost(state, args) {
+      state.post = args.post;
     },
     prependPost(state, args) {
       state.posts.unshift(args.post);
@@ -101,6 +105,14 @@ export default createStore({
         .get("/api/posts")
         .then((resp) => {
           commit("setPosts", { posts: resp.data });
+        })
+        .catch(defaultErrorHandler);
+    },
+    async loadPost({ commit }, args) {
+      return axios
+        .get(`/api/posts/${args.postId}`)
+        .then((resp) => {
+          commit("setPost", { post: resp.data });
         })
         .catch(defaultErrorHandler);
     },
