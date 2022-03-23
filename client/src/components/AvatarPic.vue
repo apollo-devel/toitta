@@ -2,6 +2,7 @@
   <router-link
     :to="'/profile/' + user.username"
     :class="{ 'large-link': size === 'large' }"
+    v-if="!disableLink"
   >
     <img
       :src="url"
@@ -9,6 +10,12 @@
       :class="{ large: size === 'large' }"
     />
   </router-link>
+  <img
+    v-else
+    :src="url"
+    class="uk-border-circle avatar"
+    :class="{ large: size === 'large' }"
+  />
 </template>
 
 <script>
@@ -18,6 +25,10 @@ export default {
   props: {
     user: Object,
     size: String,
+    disableLink: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props) {
     const imageUrl = (user) => {

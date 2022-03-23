@@ -14,7 +14,6 @@
     <div id="reply-modal" uk-modal>
       <reply-modal @closeModal="closeModal"></reply-modal>
     </div>
-    <button uk-toggle="target: #reply-modal">open</button>
   </div>
 </template>
 

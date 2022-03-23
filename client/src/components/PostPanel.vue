@@ -9,12 +9,19 @@
       </router-link>
     </div>
     <div class="uk-flex uk-flex-top">
-      <avatar-pic :user="displayPost.posted_by"></avatar-pic>
+      <avatar-pic
+        :user="displayPost.posted_by"
+        :disableLink="disableLink"
+      ></avatar-pic>
       <div class="uk-flex uk-flex-left uk-flex-column uk-margin-left uk-flex-1">
         <div class="uk-flex uk-flex-middle uk-flex-row">
-          <display-name :user="displayPost.posted_by"></display-name>
+          <display-name
+            :user="displayPost.posted_by"
+            :disableLink="disableLink"
+          ></display-name>
           <username-link
             :user="displayPost.posted_by"
+            :disableLink="disableLink"
             class="uk-margin-small-left"
           ></username-link>
           <span class="uk-margin-small-left uk-text-muted">
@@ -24,15 +31,28 @@
           <span uk-icon="icon: close; ratio: 0.8"></span>
         </div>
         <div v-if="isReply">
-          @{{ displayPost.reply_to.posted_by.username }} へ返信
+          <router-link
+            :to="'/profile/' + displayPost.reply_to.posted_by.username"
+          >
+            @{{ displayPost.reply_to.posted_by.username }}
+          </router-link>
+          へ返信
         </div>
         <div class="uk-flex uk-margin-small-top">
           {{ displayPost.content }}
         </div>
-        <div class="uk-flex uk-flex-between uk-margin-small-top">
+        <div
+          class="uk-flex uk-flex-between uk-margin-small-top"
+          v-if="!disableLink"
+        >
+          <!-- 返信 -->
           <span class="uk-flex-1 reply">
             <span uk-icon="comment" @click="onReplyClick"></span>
+            <span class="uk-margin-small-left">
+              {{ displayPost.reply_count ? displayPost.reply_count : "" }}
+            </span>
           </span>
+          <!-- リツイート -->
           <span
             class="uk-flex-1 retweet"
             :class="{ active: displayPost.retweeting }"
@@ -42,6 +62,7 @@
               displayPost.retweet_count ? displayPost.retweet_count : ""
             }}</span>
           </span>
+          <!-- いいね -->
           <span class="uk-flex-1 like" :class="{ active: displayPost.liking }">
             <span uk-icon="heart" @click="onLikeClick"></span>
             <span class="uk-margin-small-left">{{
@@ -71,6 +92,7 @@ export default {
   },
   props: {
     post: Object,
+    disableLink: Boolean,
   },
   setup(props, context) {
     const store = useStore();

@@ -90,6 +90,10 @@ export default createStore({
       }
       return axios.post("/api/posts", body).then((resp) => {
         commit("prependPost", { post: resp.data });
+        if (resp.data.reply_to) {
+          // 返信を投稿した場合は返信先の返信件数の表示を更新する
+          commit("updatePost", { post: resp.data.reply_to });
+        }
       });
     },
     async loadPosts({ commit }) {

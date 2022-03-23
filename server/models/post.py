@@ -16,6 +16,7 @@ class Post:
         posted_by: str,
         retweeted_post: str = None,
         reply_to: str = None,
+        reply_count: int = 0,
         like_count: int = 0,
         retweet_count: int = 0,
         created_at: datetime = None,
@@ -25,6 +26,7 @@ class Post:
         self.posted_by = posted_by
         self.retweeted_post = retweeted_post
         self.reply_to = reply_to
+        self.reply_count = reply_count
         self.like_count = like_count
         self.retweet_count = retweet_count
         if not created_at:

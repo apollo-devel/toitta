@@ -32,9 +32,16 @@ def create_post():
     reply_to = None
     if "reply_to" in body and body["reply_to"]:
         reply_to = body["reply_to"]
+
     post = Post(content=body["content"], posted_by=body["posted_by"], reply_to=reply_to)
 
     post.create()
+
+    if "reply_to" in body and body["reply_to"]:
+        reply_count = Post._collection.count_documents({"reply_to": ObjectId(reply_to)})
+        Post._collection.find_one_and_update(
+            {"_id": ObjectId(reply_to)}, {"$set": {"reply_count": reply_count}}
+        )
 
     return jsonify(_populate(vars(post)))
 

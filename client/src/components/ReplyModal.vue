@@ -1,8 +1,13 @@
 <template>
   <div class="uk-modal-dialog uk-modal-body">
-    <post-panel v-if="Boolean(post)" :post="post"></post-panel>
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <post-panel
+      v-if="Boolean(post)"
+      :post="post"
+      :disableLink="true"
+    ></post-panel>
     <div class="uk-flex uk-flex-top">
-      <avatar-pic :user="userLoggedIn"></avatar-pic>
+      <avatar-pic :user="userLoggedIn" :disableLink="true"></avatar-pic>
       <textarea
         v-model="content"
         placeholder="返信をツイート"
