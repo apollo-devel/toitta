@@ -15,6 +15,7 @@ class Post:
         content: str,
         posted_by: str,
         retweeted_post: str = None,
+        reply_to: str = None,
         like_count: int = 0,
         retweet_count: int = 0,
         created_at: datetime = None,
@@ -23,6 +24,7 @@ class Post:
         self.content = content
         self.posted_by = posted_by
         self.retweeted_post = retweeted_post
+        self.reply_to = reply_to
         self.like_count = like_count
         self.retweet_count = retweet_count
         if not created_at:
@@ -37,6 +39,8 @@ class Post:
         data["posted_by"] = ObjectId(data["posted_by"])
         if "retweeted_post" in data and data["retweeted_post"]:
             data["retweeted_post"] = ObjectId(data["retweeted_post"])
+        if "reply_to" in data and data["reply_to"]:
+            data["reply_to"] = ObjectId(data["reply_to"])
         return self._collection.insert_one(data)
 
     @classmethod

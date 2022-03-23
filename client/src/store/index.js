@@ -25,6 +25,7 @@ export default createStore({
       },
       users: [],
     },
+    replyTo: undefined,
   },
   getters: {},
   mutations: {
@@ -54,6 +55,9 @@ export default createStore({
     setProfileUsers(state, args) {
       state.profile.users = args.users;
     },
+    setReplyTo(state, args) {
+      state.replyTo = args.post;
+    },
   },
   actions: {
     async registerUser({ commit }, args) {
@@ -81,6 +85,9 @@ export default createStore({
         content: args.content,
         posted_by: state.userLoggedIn._id,
       };
+      if (args.reply_to) {
+        body.reply_to = args.reply_to;
+      }
       return axios.post("/api/posts", body).then((resp) => {
         commit("prependPost", { post: resp.data });
       });
@@ -164,6 +171,9 @@ export default createStore({
           commit("setProfileUsers", { users: resp.data });
         })
         .catch(defaultErrorHandler);
+    },
+    async openReplyModal({ commit }, args) {
+      return commit("setReplyTo", { post: args.post });
     },
   },
   modules: {},

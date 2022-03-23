@@ -29,7 +29,10 @@ def create_post():
     if last and last["content"] == body["content"]:
         return error("すでに同じ内容のツイートが投稿されています")
 
-    post = Post(content=body["content"], posted_by=body["posted_by"])
+    reply_to = None
+    if "reply_to" in body and body["reply_to"]:
+        reply_to = body["reply_to"]
+    post = Post(content=body["content"], posted_by=body["posted_by"], reply_to=reply_to)
 
     post.create()
 
@@ -211,5 +214,9 @@ def _populate(post):
     if "retweeted_post" in post and post["retweeted_post"]:
         post["retweeted_post"] = _populate(
             Post._collection.find_one({"_id": post["retweeted_post"]})
+        )
+    if "reply_to" in post and post["reply_to"]:
+        post["reply_to"] = _populate(
+            Post._collection.find_one({"_id": post["reply_to"]})
         )
     return post

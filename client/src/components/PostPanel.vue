@@ -23,11 +23,16 @@
           <span class="uk-flex-1"></span>
           <span uk-icon="icon: close; ratio: 0.8"></span>
         </div>
+        <div v-if="isReply">
+          @{{ displayPost.reply_to.posted_by.username }} へ返信
+        </div>
         <div class="uk-flex uk-margin-small-top">
           {{ displayPost.content }}
         </div>
         <div class="uk-flex uk-flex-between uk-margin-small-top">
-          <span class="uk-flex-1" uk-icon="comment"></span>
+          <span class="uk-flex-1 reply">
+            <span uk-icon="comment" @click="onReplyClick"></span>
+          </span>
           <span
             class="uk-flex-1 retweet"
             :class="{ active: displayPost.retweeting }"
@@ -51,6 +56,7 @@
 </template>
 
 <script>
+import { computed } from "vue";
 import { useStore } from "vuex";
 
 import AvatarPic from "@/components/AvatarPic.vue";
@@ -66,32 +72,42 @@ export default {
   props: {
     post: Object,
   },
-  setup(props) {
+  setup(props, context) {
     const store = useStore();
 
-    const isRetweet = Boolean(props.post.retweeted_post);
-    const displayPost = isRetweet ? props.post.retweeted_post : props.post;
+    const isRetweet = Boolean(props.post && props.post.retweeted_post);
+    const isReply = Boolean(props.post && props.post.reply_to);
+    const displayPost = computed(() =>
+      isRetweet ? props.post.retweeted_post : props.post
+    );
 
     const onLikeClick = () => {
-      if (displayPost.liking) {
-        store.dispatch("unlikePost", { post: displayPost });
+      if (displayPost.value.liking) {
+        store.dispatch("unlikePost", { post: displayPost.value });
       } else {
-        store.dispatch("likePost", { post: displayPost });
+        store.dispatch("likePost", { post: displayPost.value });
       }
     };
 
     const onRetweetClick = () => {
-      if (displayPost.retweeting) {
-        store.dispatch("unretweetPost", { post: displayPost });
+      if (displayPost.value.retweeting) {
+        store.dispatch("unretweetPost", { post: displayPost.value });
       } else {
-        store.dispatch("retweetPost", { post: displayPost });
+        store.dispatch("retweetPost", { post: displayPost.value });
       }
     };
+
+    const onReplyClick = () => {
+      context.emit("clickReply", displayPost.value);
+    };
+
     return {
       isRetweet,
+      isReply,
       displayPost,
       onLikeClick,
       onRetweetClick,
+      onReplyClick,
     };
   },
 };
@@ -107,7 +123,8 @@ export default {
 }
 
 .like,
-.retweet {
+.retweet,
+.reply {
   cursor: pointer;
 }
 </style>
