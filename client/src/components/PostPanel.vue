@@ -1,7 +1,12 @@
 <template>
-  <div class="uk-margin-right">
+  <div
+    class="uk-margin-right"
+    :class="{ clickable: !disableLink }"
+    @click="onBodyClick"
+  >
     <div class="uk-margin-small-left uk-margin-small-bottom" v-if="isRetweet">
       <router-link
+        @click.stop
         :to="'/profile/' + post.posted_by.username"
         class="uk-link-text"
       >
@@ -10,16 +15,19 @@
     </div>
     <div class="uk-flex uk-flex-top">
       <avatar-pic
+        @click.stop
         :user="displayPost.posted_by"
         :disableLink="disableLink"
       ></avatar-pic>
       <div class="uk-flex uk-flex-left uk-flex-column uk-margin-left uk-flex-1">
         <div class="uk-flex uk-flex-middle uk-flex-row">
           <display-name
+            @click.stop
             :user="displayPost.posted_by"
             :disableLink="disableLink"
           ></display-name>
           <username-link
+            @click.stop
             :user="displayPost.posted_by"
             :disableLink="disableLink"
             class="uk-margin-small-left"
@@ -32,6 +40,7 @@
         </div>
         <div v-if="isReply && !disableLink">
           <router-link
+            @click.stop
             :to="
               displayPost.reply_to
                 ? '/profile/' + displayPost.reply_to.posted_by.username
@@ -46,7 +55,10 @@
           </router-link>
           へ返信
         </div>
-        <div class="uk-flex uk-margin-small-top">
+        <div
+          class="uk-flex uk-margin-small-top"
+          :class="{ 'uk-text-large': main }"
+        >
           {{ displayPost.content }}
         </div>
         <div
@@ -55,7 +67,7 @@
         >
           <!-- 返信 -->
           <span class="uk-flex-1 reply">
-            <span uk-icon="comment" @click="onReplyClick"></span>
+            <span uk-icon="comment" @click.stop="onReplyClick"></span>
             <span class="uk-margin-small-left">
               {{ displayPost.reply_count ? displayPost.reply_count : "" }}
             </span>
@@ -65,14 +77,14 @@
             class="uk-flex-1 retweet"
             :class="{ active: displayPost.retweeting }"
           >
-            <span uk-icon="bolt" @click="onRetweetClick"></span>
+            <span uk-icon="bolt" @click.stop="onRetweetClick"></span>
             <span class="uk-margin-small-left">{{
               displayPost.retweet_count ? displayPost.retweet_count : ""
             }}</span>
           </span>
           <!-- いいね -->
           <span class="uk-flex-1 like" :class="{ active: displayPost.liking }">
-            <span uk-icon="heart" @click="onLikeClick"></span>
+            <span uk-icon="heart" @click.stop="onLikeClick"></span>
             <span class="uk-margin-small-left">{{
               displayPost.like_count ? displayPost.like_count : ""
             }}</span>
@@ -86,6 +98,7 @@
 
 <script>
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
 import AvatarPic from "@/components/AvatarPic.vue";
@@ -101,6 +114,10 @@ export default {
   props: {
     post: Object,
     disableLink: Boolean,
+    main: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props, context) {
     const store = useStore();
@@ -133,6 +150,14 @@ export default {
       context.emit("clickReply", displayPost.value);
     };
 
+    const router = useRouter();
+    const onBodyClick = () => {
+      if (props.disableLink) {
+        return;
+      }
+      router.push(`/posts/${displayPost.value._id}`);
+    };
+
     return {
       isRetweet,
       isReply,
@@ -140,6 +165,7 @@ export default {
       onLikeClick,
       onRetweetClick,
       onReplyClick,
+      onBodyClick,
     };
   },
 };
@@ -157,6 +183,10 @@ export default {
 .like,
 .retweet,
 .reply {
+  cursor: pointer;
+}
+
+.clickable {
   cursor: pointer;
 }
 </style>

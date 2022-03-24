@@ -5,7 +5,7 @@
       v-if="Boolean(post.reply_to)"
       :post="post.reply_to"
     ></post-panel>
-    <post-panel :post="post"></post-panel>
+    <post-panel :post="post" main="true"></post-panel>
     <post-panel
       v-for="reply in post.replies"
       :post="reply"

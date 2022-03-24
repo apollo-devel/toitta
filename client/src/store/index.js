@@ -52,6 +52,18 @@ export default createStore({
           (p) => p.retweeted_post && p.retweeted_post._id === args.post._id
         )
         .forEach((p) => Object.assign(p.retweeted_post, args.post));
+
+      if (state.post._id === args.post._id) {
+        Object.assign(state.post, args.post);
+      }
+
+      if (state.post.reply_to && state.post.reply_to._id === args.post._id) {
+        Object.assign(state.post.reply_to, args.post);
+      }
+
+      state.post.replies
+        .filter((p) => p._id === args.post._id)
+        .forEach((p) => Object.assign(p, args.post));
     },
     setProfileUser(state, args) {
       state.profile.user = args.user;
