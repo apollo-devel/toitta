@@ -227,6 +227,30 @@ def get_post(post_id):
     return jsonify(post)
 
 
+@app.route("/api/posts/<post_id>", methods=["DELETE"])
+@login_required()
+def delete_post(post_id):
+    post = Post._collection.find_one({"_id": ObjectId(post_id)})
+    if not post:
+        return error("投稿が存在しません", 404)
+    user_id = session["user"]["_id"]
+    if str(post["posted_by"]) != user_id:
+        return error("投稿を削除できません")
+    Like._collection.delete_many({"post": ObjectId(post_id)})
+    Retweet._collection.delete_many({"post": ObjectId(post_id)})
+
+    Post._collection.find_one_and_delete({"_id": ObjectId(post_id)})
+
+    if "reply_to" in post and post["reply_to"]:
+        reply_to = post["reply_to"]
+        reply_count = Post._collection.count_documents({"reply_to": reply_to})
+        Post._collection.find_one_and_update(
+            {"_id": reply_to}, {"$set": {"reply_count": reply_count}}
+        )
+
+    return "", 204
+
+
 def _populate(post, set_liking_and_retweeting=False):
     if not post:
         return post

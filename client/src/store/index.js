@@ -65,6 +65,12 @@ export default createStore({
         .filter((p) => p._id === args.post._id)
         .forEach((p) => Object.assign(p, args.post));
     },
+    deletePost(state, args) {
+      const index = state.posts.findIndex((p) => p._id === args.postId);
+      if (index >= 0) {
+        state.posts.splice(index, 1);
+      }
+    },
     setProfileUser(state, args) {
       state.profile.user = args.user;
     },
@@ -111,6 +117,14 @@ export default createStore({
           commit("updatePost", { post: resp.data.reply_to });
         }
       });
+    },
+    async deletePost({ commit }, args) {
+      return axios
+        .delete(`/api/posts/${args.postId}`)
+        .then(() => {
+          commit("deletePost", { postId: args.postId });
+        })
+        .catch(defaultErrorHandler);
     },
     async loadPosts({ commit }) {
       return axios

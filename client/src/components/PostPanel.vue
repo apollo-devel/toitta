@@ -36,7 +36,12 @@
             {{ displayPost.created_at }}
           </span>
           <span class="uk-flex-1"></span>
-          <span uk-icon="icon: close; ratio: 0.8"></span>
+          <!-- 削除ボタン -->
+          <span
+            v-if="isOwnPost && !disableLink"
+            uk-icon="icon: close; ratio: 0.8"
+            @click.stop="onDeleteClick"
+          ></span>
         </div>
         <div v-if="isReply && !disableLink">
           <router-link
@@ -97,6 +102,7 @@
 </template>
 
 <script>
+import UIkit from "uikit";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -158,14 +164,34 @@ export default {
       router.push(`/posts/${displayPost.value._id}`);
     };
 
+    const isOwnPost = computed(() => {
+      return (
+        displayPost.value.posted_by &&
+        displayPost.value.posted_by._id === store.state.userLoggedIn._id
+      );
+    });
+
+    const onDeleteClick = () => {
+      UIkit.modal.confirm("ツイートを削除します。").then(
+        () => {
+          store.dispatch("deletePost", { postId: displayPost.value._id });
+        },
+        () => {
+          // noop
+        }
+      );
+    };
+
     return {
       isRetweet,
       isReply,
+      isOwnPost,
       displayPost,
       onLikeClick,
       onRetweetClick,
       onReplyClick,
       onBodyClick,
+      onDeleteClick,
     };
   },
 };
