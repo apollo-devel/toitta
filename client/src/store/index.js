@@ -24,6 +24,9 @@ export default createStore({
         username: "",
       },
       users: [],
+      tweets: [],
+      tweetsAndReplies: [],
+      likes: [],
     },
     replyTo: undefined,
     post: undefined,
@@ -73,6 +76,9 @@ export default createStore({
     },
     setProfileUser(state, args) {
       state.profile.user = args.user;
+    },
+    setProfilePosts(state, args) {
+      state.profile[args.tab] = args.posts;
     },
     setProfileUsers(state, args) {
       state.profile.users = args.users;
@@ -179,6 +185,24 @@ export default createStore({
         .get(`/api/users/${args.username}`)
         .then((resp) => {
           commit("setProfileUser", { user: resp.data });
+        })
+        .catch(defaultErrorHandler);
+    },
+    async loadProfilePosts({ commit }, args) {
+      let type;
+      switch (args.tab) {
+        case "tweets":
+        case "likes":
+          type = args.tab;
+          break;
+        default:
+          type = "tweets_and_replies";
+          break;
+      }
+      return axios
+        .get(`/api/users/${args.username}/posts?type=${type}`)
+        .then((resp) => {
+          commit("setProfilePosts", { posts: resp.data, tab: args.tab });
         })
         .catch(defaultErrorHandler);
     },

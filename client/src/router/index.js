@@ -22,9 +22,21 @@ const routes = [
     component: () => import("../views/FollowerView.vue"),
   },
   {
+    path: "/profile/:username/tweets_and_replies",
+    name: "profileTweetsAndReplies",
+    meta: { loginRequired: true, tab: "tweetsAndReplies" },
+    component: () => import("../views/ProfileView.vue"),
+  },
+  {
+    path: "/profile/:username/likes",
+    name: "profileLikes",
+    meta: { loginRequired: true, tab: "likes" },
+    component: () => import("../views/ProfileView.vue"),
+  },
+  {
     path: "/profile/:username?",
     name: "profile",
-    meta: { loginRequired: true },
+    meta: { loginRequired: true, tab: "tweets" },
     component: () => import("../views/ProfileView.vue"),
   },
   {

@@ -1,7 +1,7 @@
 <template>
   <div class="uk-width-1-1 uk-position-relative">
     <h3 class="uk-margin-small-top uk-margin-small-bottom">
-      {{ username }}
+      {{ user.username }}
     </h3>
     <div class="cover uk-margin-right"></div>
     <avatar-pic
@@ -35,7 +35,7 @@
         <div class="uk-margin-small-top">{{ user.description }}</div>
         <div class="uk-margin-small-top">
           <router-link
-            :to="'/profile/' + username + '/following'"
+            :to="'/profile/' + user.username + '/following'"
             class="uk-link-text uk-margin-right"
           >
             <span class="uk-text-bold">{{
@@ -44,7 +44,7 @@
             <span>フォロー中</span>
           </router-link>
           <router-link
-            :to="'/profile/' + username + '/followers'"
+            :to="'/profile/' + user.username + '/followers'"
             class="uk-link-text"
           >
             <span class="uk-text-bold">{{
@@ -55,16 +55,32 @@
         </div>
       </div>
       <div class="uk-margin-top uk-margin-right">
-        <ul class="uk-child-width-expand" ref="tabs" uk-tab uk-switcher>
-          <li><a>ツイート</a></li>
-          <li><a>ツイートと返信</a></li>
-          <li><a>いいね</a></li>
+        <ul class="uk-child-width-expand" ref="tabs" uk-tab>
+          <li :class="{ 'uk-active': tab === 'tweets' }">
+            <router-link :to="'/profile/' + user.username">
+              ツイート
+            </router-link>
+          </li>
+          <li :class="{ 'uk-active': tab === 'tweetsAndReplies' }">
+            <router-link
+              :to="'/profile/' + user.username + '/tweets_and_replies'"
+            >
+              ツイートと返信
+            </router-link>
+          </li>
+          <li :class="{ 'uk-active': tab === 'likes' }">
+            <router-link :to="'/profile/' + user.username + '/likes'">
+              いいね
+            </router-link>
+          </li>
         </ul>
-        <ul class="uk-switcher">
-          <div>ツイートです</div>
-          <div>ツイートと返信です</div>
-          <div>いいねです</div>
-        </ul>
+      </div>
+      <div>
+        <post-panel
+          v-for="post in posts"
+          :key="post._id"
+          :post="post"
+        ></post-panel>
       </div>
     </div>
     <div class="uk-position-absolute error-message" v-else>
@@ -79,16 +95,19 @@ import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
 import AvatarPic from "@/components/AvatarPic.vue";
+import PostPanel from "@/components/PostPanel.vue";
 
 export default {
   components: {
     AvatarPic,
+    PostPanel,
   },
   setup() {
     const route = useRoute();
     const store = useStore();
 
-    let username = undefined;
+    let tab = computed(() => route.meta.tab);
+    let posts = computed(() => store.state.profile[tab.value]);
     const isMe = ref(false);
     const isFollowing = computed(
       () =>
@@ -100,15 +119,16 @@ export default {
     const user = computed(() => store.state.profile.user);
 
     watch(
-      () => route.params.username,
+      () => [route.params.username, route.meta.tab],
       () => {
-        username = route.params.username
+        const username = route.params.username
           ? route.params.username
           : store.state.userLoggedIn.username;
         store
           .dispatch("loadProfileUser", { username })
           .then(() => {
             isMe.value = username === store.state.userLoggedIn.username;
+            store.dispatch("loadProfilePosts", { username, tab: tab.value });
           })
           .catch(() => {
             // noop
@@ -122,20 +142,25 @@ export default {
     const onFollowClick = () => {
       if (isFollowing.value) {
         store
-          .dispatch("unfollowUser", { username })
-          .then(() => store.dispatch("loadProfileUser", { username }));
+          .dispatch("unfollowUser", { username: user.value.username })
+          .then(() =>
+            store.dispatch("loadProfileUser", { username: user.value.username })
+          );
       } else {
         store
-          .dispatch("followUser", { username })
-          .then(() => store.dispatch("loadProfileUser", { username }));
+          .dispatch("followUser", { username: user.value.username })
+          .then(() =>
+            store.dispatch("loadProfileUser", { username: user.value.username })
+          );
       }
     };
 
     return {
       isMe,
       isFollowing,
-      username,
       user,
+      tab,
+      posts,
       onFollowClick,
     };
   },

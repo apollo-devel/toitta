@@ -64,6 +64,6 @@ export default {
 }
 
 .large-link {
-  z-index: 20000;
+  z-index: 1000;
 }
 </style>

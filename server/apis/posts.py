@@ -49,49 +49,106 @@ def create_post():
 @app.route("/api/posts", methods=["GET"])
 @login_required()
 def list_posts():
+    ids = [ObjectId(idx) for idx in session["user"]["following"]]
+    ids.append(ObjectId(session["user"]["_id"]))
+
     results = []
-    for post in Post._collection.find(sort=[("created_at", pymongo.DESCENDING)]):
+    for post in Post._collection.find(
+        {"posted_by": {"$in": ids}}, sort=[("created_at", pymongo.DESCENDING)]
+    ):
         results.append(_populate(post))
 
     if results:
-        user_id = ObjectId(session["user"]["_id"])
-        term = {"$gte": results[-1]["created_at"], "$lte": results[0]["created_at"]}
-
-        liked_posts = {
-            like["post"]
-            for like in Like._collection.find({"liked_by": user_id, "posted_at": term})
-        }
-        retweeted_posts = {
-            retweet["post"]
-            for retweet in Retweet._collection.find(
-                {"retweeted_by": user_id, "posted_at": term}
-            )
-        }
-        for result in results:
-            result["liking"] = result["_id"] in liked_posts
-            result["retweeting"] = result["_id"] in retweeted_posts
-
-        for result in results:
-            if (
-                "retweeted_post" in result
-                and result["retweeted_post"]
-                and "_id" in result["retweeted_post"]
-            ):
-                retweeted_post_id = ObjectId(result["retweeted_post"]["_id"])
-                result["retweeted_post"]["liking"] = (
-                    Like._collection.find_one(
-                        {"liked_by": user_id, "post": retweeted_post_id}
-                    )
-                    is not None
-                )
-                result["retweeted_post"]["retweeting"] = (
-                    Retweet._collection.find_one(
-                        {"retweeted_by": user_id, "post": retweeted_post_id}
-                    )
-                    is not None
-                )
+        _set_liking_and_retweeting(results)
 
     return jsonify(results)
+
+
+@app.route("/api/users/<username>/posts", methods=["GET"])
+@login_required()
+def list_user_posts(username):
+    user = User._collection.find_one({"username": username})
+    if not user:
+        return error("ユーザーが存在しません。")
+
+    post_type = request.args.get("type", "tweets")
+
+    results = []
+    if post_type == "tweets":
+        # ツイート
+        condition = {"posted_by": user["_id"], "reply_to": None}
+        for post in Post._collection.find(
+            condition, sort=[("created_at", pymongo.DESCENDING)]
+        ):
+            results.append(_populate(post))
+    elif post_type == "tweets_and_replies":
+        # ツイートと返信
+        condition = {"posted_by": user["_id"]}
+        for post in Post._collection.find(
+            condition, sort=[("created_at", pymongo.DESCENDING)]
+        ):
+            results.append(_populate(post))
+    elif post_type == "likes":
+        # いいね
+        for like in Like._collection.find(
+            {"liked_by": user["_id"]}, sort=[("liked_at", pymongo.DESCENDING)]
+        ):
+            post = Post._collection.find_one({"_id": like["post"]})
+            results.append(_populate(post))
+    else:
+        app.logger.error(f"不明な種別が指定されました: {post_type}")
+        return error("Internal Server Error", 500)
+
+    if results:
+        _set_liking_and_retweeting(results)
+
+    return jsonify(results)
+
+
+def _set_liking_and_retweeting(results):
+    """
+    resultsの各要素に、ログインユーザーが いいね / リツイート をしたかどうかを
+    表す liking / retweeting フィールドを設定する。
+
+    results は Post._collection.find の戻り値の各要素を _populate した配列
+    が渡されることを想定している。
+    """
+    user_id = ObjectId(session["user"]["_id"])
+    term = {"$gte": results[-1]["created_at"], "$lte": results[0]["created_at"]}
+
+    liked_posts = {
+        like["post"]
+        for like in Like._collection.find({"liked_by": user_id, "posted_at": term})
+    }
+    retweeted_posts = {
+        retweet["post"]
+        for retweet in Retweet._collection.find(
+            {"retweeted_by": user_id, "posted_at": term}
+        )
+    }
+    for result in results:
+        result["liking"] = result["_id"] in liked_posts
+        result["retweeting"] = result["_id"] in retweeted_posts
+
+    for result in results:
+        if (
+            "retweeted_post" in result
+            and result["retweeted_post"]
+            and "_id" in result["retweeted_post"]
+        ):
+            retweeted_post_id = ObjectId(result["retweeted_post"]["_id"])
+            result["retweeted_post"]["liking"] = (
+                Like._collection.find_one(
+                    {"liked_by": user_id, "post": retweeted_post_id}
+                )
+                is not None
+            )
+            result["retweeted_post"]["retweeting"] = (
+                Retweet._collection.find_one(
+                    {"retweeted_by": user_id, "post": retweeted_post_id}
+                )
+                is not None
+            )
 
 
 @app.route("/api/posts/<post_id>/like", methods=["POST"])
