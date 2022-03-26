@@ -1,11 +1,11 @@
 <template>
   <div class="uk-modal-dialog uk-modal-body">
     <button class="uk-modal-close-default" type="button" uk-close></button>
-    <post-panel
+    <simple-post-panel
       v-if="Boolean(post)"
       :post="post"
       :disableLink="true"
-    ></post-panel>
+    ></simple-post-panel>
     <div class="uk-flex uk-flex-top">
       <avatar-pic :user="userLoggedIn" :disableLink="true"></avatar-pic>
       <textarea
@@ -32,12 +32,12 @@ import { computed, ref } from "vue";
 import { useStore } from "vuex";
 
 import AvatarPic from "@/components/AvatarPic.vue";
-import PostPanel from "@/components/PostPanel.vue";
+import SimplePostPanel from "@/components/SimplePostPanel.vue";
 
 export default {
   components: {
     AvatarPic,
-    PostPanel,
+    SimplePostPanel,
   },
   setup(_, context) {
     const store = useStore();
@@ -55,6 +55,7 @@ export default {
         .then(() => {
           content.value = "";
           context.emit("closeModal");
+          context.emit("replySuccess");
         })
         .catch((error) => {
           UIkit.notification(error.response.data.error.message, {

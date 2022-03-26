@@ -46,27 +46,37 @@ export default createStore({
       state.posts.unshift(args.post);
     },
     updatePost(state, args) {
-      const orig = state.posts.find((p) => p._id === args.post._id);
-      if (orig) {
-        Object.assign(orig, args.post);
-      }
-      state.posts
-        .filter(
-          (p) => p.retweeted_post && p.retweeted_post._id === args.post._id
-        )
-        .forEach((p) => Object.assign(p.retweeted_post, args.post));
+      const targets = [
+        state.posts,
+        state.profile.tweets,
+        state.profile.tweetsAndReplies,
+        state.profile.likes,
+      ];
 
-      if (state.post._id === args.post._id) {
-        Object.assign(state.post, args.post);
+      if (state.post) {
+        targets.push([state.post]);
       }
 
-      if (state.post.reply_to && state.post.reply_to._id === args.post._id) {
-        Object.assign(state.post.reply_to, args.post);
-      }
+      targets.forEach((target) => {
+        const orig = target.find((p) => p._id === args.post._id);
+        if (orig) {
+          Object.assign(orig, args.post);
+        }
+        target
+          .filter(
+            (p) => p.retweeted_post && p.retweeted_post._id === args.post._id
+          )
+          .forEach((p) => Object.assign(p.retweeted_post, args.post));
+        target
+          .filter((p) => p.reply_to && p.reply_to._id === args.post._id)
+          .forEach((p) => Object.assign(p.reply_to, args.post));
+      });
 
-      state.post.replies
-        .filter((p) => p._id === args.post._id)
-        .forEach((p) => Object.assign(p, args.post));
+      if (state.post) {
+        state.post.replies
+          .filter((p) => p._id === args.post._id)
+          .forEach((p) => Object.assign(p, args.post));
+      }
     },
     deletePost(state, args) {
       const index = state.posts.findIndex((p) => p._id === args.postId);

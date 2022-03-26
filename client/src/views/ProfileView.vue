@@ -9,7 +9,7 @@
       size="large"
       class="uk-position-absolute uk-margin-small-left large-avatar"
     ></avatar-pic>
-    <div class="uk-width-1-1 uk-position-absolute" v-if="user._id">
+    <div class="uk-width-1-1 uk-position-relative" v-if="user._id">
       <div
         class="uk-flex uk-flex-row uk-flex-top uk-margin-right uk-margin-small-top buttons"
       >
@@ -80,6 +80,7 @@
           v-for="post in posts"
           :key="post._id"
           :post="post"
+          @replySuccess="onReplySuccess"
         ></post-panel>
       </div>
     </div>
@@ -155,6 +156,15 @@ export default {
       }
     };
 
+    const onReplySuccess = () => {
+      if (isMe.value && tab.value === "tweetsAndReplies") {
+        store.dispatch("loadProfilePosts", {
+          username: user.value.username,
+          tab: "tweetsAndReplies",
+        });
+      }
+    };
+
     return {
       isMe,
       isFollowing,
@@ -162,6 +172,7 @@ export default {
       tab,
       posts,
       onFollowClick,
+      onReplySuccess,
     };
   },
 };
@@ -174,7 +185,7 @@ export default {
 }
 
 .large-avatar {
-  bottom: -66px;
+  top: 160px;
 }
 
 .buttons {
