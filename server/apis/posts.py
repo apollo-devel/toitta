@@ -5,6 +5,7 @@ from flask import jsonify, request, session
 from apis import error, login_required
 from main import app
 from models.like import Like
+from models.notification import Notification
 from models.post import Post
 from models.retweet import Retweet
 from models.user import User
@@ -37,11 +38,15 @@ def create_post():
 
     post.create()
 
-    if "reply_to" in body and body["reply_to"]:
+    if reply_to:
         reply_count = Post._collection.count_documents({"reply_to": ObjectId(reply_to)})
-        Post._collection.find_one_and_update(
+        replied_post = Post._collection.find_one_and_update(
             {"_id": ObjectId(reply_to)}, {"$set": {"reply_count": reply_count}}
         )
+
+        Notification.reply(
+            session["user"]["_id"], str(replied_post["posted_by"]), reply_to
+        ).create()
 
     return jsonify(_populate(vars(post)))
 
@@ -177,6 +182,9 @@ def like_post(post_id):
             return_document=pymongo.ReturnDocument.AFTER,
         )
         post["liking"] = True
+
+        Notification.like(user_id, str(post["posted_by"]), post_id).create()
+
         return jsonify(_populate(post))
 
 
@@ -236,6 +244,8 @@ def retweet_post(post_id):
             return_document=pymongo.ReturnDocument.AFTER,
         )
         post["retweeting"] = True
+
+        Notification.retweet(user_id, str(post["posted_by"]), post_id).create()
 
         return jsonify(_populate(post))
 

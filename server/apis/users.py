@@ -4,6 +4,7 @@ from flask import jsonify, request, session
 
 from apis import error, login_required
 from main import app
+from models.notification import Notification
 from models.user import User
 
 
@@ -62,6 +63,9 @@ def follow_user(username):
         return_document=pymongo.ReturnDocument.AFTER,
     )
     User.set_session_user(me)
+
+    Notification.follow(own_id, user_id).create()
+
     return jsonify(me)
 
 

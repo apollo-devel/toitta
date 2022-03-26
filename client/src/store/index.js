@@ -58,6 +58,9 @@ export default createStore({
       }
 
       targets.forEach((target) => {
+        if (!target) {
+          return;
+        }
         const orig = target.find((p) => p._id === args.post._id);
         if (orig) {
           Object.assign(orig, args.post);
