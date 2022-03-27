@@ -27,6 +27,9 @@ class Notification:
         self.created_at = created_at
 
     def create(self):
+        if self.user_from == self.user_to:
+            # 自身の操作は通知不要
+            return
         data = vars(self)
         data["user_from"] = ObjectId(data["user_from"])
         data["user_to"] = ObjectId(data["user_to"])

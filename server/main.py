@@ -19,4 +19,4 @@ class CustomJSONEncoder(JSONEncoder):
 
 app.json_encoder = CustomJSONEncoder
 
-from apis import login, posts, users
+from apis import login, notifications, posts, users

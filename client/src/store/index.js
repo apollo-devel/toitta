@@ -28,6 +28,8 @@ export default createStore({
       tweetsAndReplies: [],
       likes: [],
     },
+    notifications: [],
+    unreadNotificationCount: 0,
     replyTo: undefined,
     post: undefined,
   },
@@ -98,6 +100,12 @@ export default createStore({
     },
     setReplyTo(state, args) {
       state.replyTo = args.post;
+    },
+    setNotifications(state, args) {
+      state.notifications = args.notifications;
+    },
+    setUnreadNotificationCount(state, args) {
+      state.unreadNotificationCount = args.count;
     },
   },
   actions: {
@@ -253,6 +261,22 @@ export default createStore({
     },
     async openReplyModal({ commit }, args) {
       return commit("setReplyTo", { post: args.post });
+    },
+    async loadNotifications({ commit }) {
+      return axios
+        .get("/api/notifications")
+        .then((resp) => {
+          commit("setNotifications", { notifications: resp.data });
+        })
+        .catch(defaultErrorHandler);
+    },
+    async loadUnreadNotifications({ commit }) {
+      return axios
+        .get("/api/notifications?unread_only=true")
+        .then((resp) => {
+          commit("setUnreadNotificationCount", { count: resp.data.length });
+        })
+        .catch(defaultErrorHandler);
     },
   },
   modules: {},

@@ -36,11 +36,11 @@
       ></router-link>
     </li>
     <li>
-      <span
+      <a
         @click="logout"
         uk-icon="icon: sign-out; ratio: 2"
         uk-tooltip="title: ログアウト; pos: right"
-      ></span>
+      ></a>
     </li>
   </ul>
 </template>
