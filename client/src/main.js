@@ -13,6 +13,7 @@ router.beforeEach(async (to, from, next) => {
   if (to.matched.some((record) => record.meta.loginRequired)) {
     let user = store.state.userLoggedIn;
     if (user && user._id) {
+      store.dispatch("loadUnreadNotifications");
       next();
     } else {
       await store.dispatch("loginCheck").catch(() => {
@@ -20,6 +21,7 @@ router.beforeEach(async (to, from, next) => {
       });
       user = store.state.userLoggedIn;
       if (user && user._id) {
+        store.dispatch("loadUnreadNotifications");
         next();
       } else {
         next({ path: "/login" });

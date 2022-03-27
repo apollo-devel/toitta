@@ -14,12 +14,18 @@
         uk-tooltip="title: 検索; pos: right"
       ></router-link>
     </li>
-    <li>
+    <li class="uk-inline">
       <router-link
         to="/notifications"
         uk-icon="icon: bell; ratio: 2"
         uk-tooltip="title: 通知; pos: right"
       ></router-link>
+      <span
+        class="uk-badge uk-position-top-right uk-margin-small-top"
+        v-if="unreadNotificationCount"
+      >
+        {{ unreadNotificationCount }}
+      </span>
     </li>
     <li>
       <router-link
@@ -47,6 +53,7 @@
 
 <script>
 import UIkit from "uikit";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -68,8 +75,13 @@ export default {
         });
     };
 
+    const unreadNotificationCount = computed(() => {
+      return store.state.unreadNotificationCount;
+    });
+
     return {
       logout,
+      unreadNotificationCount,
     };
   },
 };
