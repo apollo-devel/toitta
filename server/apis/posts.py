@@ -54,18 +54,8 @@ def create_post():
 @app.route("/api/posts", methods=["GET"])
 @login_required()
 def list_posts():
-    ids = [ObjectId(idx) for idx in session["user"]["following"]]
-    ids.append(ObjectId(session["user"]["_id"]))
-
-    results = []
-    for post in Post._collection.find(
-        {"posted_by": {"$in": ids}}, sort=[("created_at", pymongo.DESCENDING)]
-    ):
-        results.append(_populate(post))
-
-    if results:
-        _set_liking_and_retweeting(results)
-
+    user = User._collection.find_one({"_id": ObjectId(session["user"]["_id"])})
+    results = [post for post in Post.list_posts(user)]
     return jsonify(results)
 
 
@@ -77,22 +67,23 @@ def list_user_posts(username):
         return error("ユーザーが存在しません。")
 
     post_type = request.args.get("type", "tweets")
+    user_logged_in = User._collection.find_one(
+        {"_id": ObjectId(session["user"]["_id"])}
+    )
 
     results = []
     if post_type == "tweets":
         # ツイート
-        condition = {"posted_by": user["_id"], "reply_to": None}
-        for post in Post._collection.find(
-            condition, sort=[("created_at", pymongo.DESCENDING)]
-        ):
-            results.append(_populate(post))
+        results = [post for post in Post.list_profile_posts(user, user_logged_in)]
+        return jsonify(results)
+
     elif post_type == "tweets_and_replies":
         # ツイートと返信
-        condition = {"posted_by": user["_id"]}
-        for post in Post._collection.find(
-            condition, sort=[("created_at", pymongo.DESCENDING)]
-        ):
-            results.append(_populate(post))
+        results = [
+            post for post in Post.list_profile_posts_and_replies(user, user_logged_in)
+        ]
+        return jsonify(results)
+
     elif post_type == "likes":
         # いいね
         for like in Like._collection.find(
@@ -116,16 +107,8 @@ def search_posts():
     query = request.args.get("q")
     if not query:
         return jsonify([])
-    results = []
-    for post in Post._collection.find(
-        {"content": {"$regex": query, "$options": "i"}},
-        sort=[("created_at", pymongo.DESCENDING)],
-    ):
-        results.append(_populate(post))
-
-    if results:
-        _set_liking_and_retweeting(results)
-
+    user = User._collection.find_one({"_id": ObjectId(session["user"]["_id"])})
+    results = [post for post in Post.search_posts(query, user)]
     return jsonify(results)
 
 

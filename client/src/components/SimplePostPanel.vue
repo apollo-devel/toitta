@@ -133,27 +133,23 @@ export default {
   setup(props, context) {
     const store = useStore();
 
-    const isRetweet = computed(() =>
-      Boolean(props.post && props.post.retweeted_post)
-    );
-    const isReply = computed(() => Boolean(props.post && props.post.reply_to));
-    const displayPost = computed(() =>
-      isRetweet.value ? props.post.retweeted_post : props.post
-    );
+    const isRetweet = Boolean(props.post && props.post.retweeted_post);
+    const isReply = Boolean(props.post && props.post.reply_to);
+    const displayPost = isRetweet ? props.post.retweeted_post : props.post;
 
     const onLikeClick = () => {
-      if (displayPost.value.liking) {
-        store.dispatch("unlikePost", { post: displayPost.value });
+      if (displayPost.liking) {
+        store.dispatch("unlikePost", { post: displayPost });
       } else {
-        store.dispatch("likePost", { post: displayPost.value });
+        store.dispatch("likePost", { post: displayPost });
       }
     };
 
     const onRetweetClick = () => {
-      if (displayPost.value.retweeting) {
-        store.dispatch("unretweetPost", { post: displayPost.value });
+      if (displayPost.retweeting) {
+        store.dispatch("unretweetPost", { post: displayPost });
       } else {
-        store.dispatch("retweetPost", { post: displayPost.value });
+        store.dispatch("retweetPost", { post: displayPost });
       }
     };
 
@@ -166,20 +162,20 @@ export default {
       if (props.disableLink) {
         return;
       }
-      router.push(`/posts/${displayPost.value._id}`);
+      router.push(`/posts/${displayPost._id}`);
     };
 
     const isOwnPost = computed(() => {
       return (
-        displayPost.value.posted_by &&
-        displayPost.value.posted_by._id === store.state.userLoggedIn._id
+        displayPost.posted_by &&
+        displayPost.posted_by._id === store.state.userLoggedIn._id
       );
     });
 
     const onDeleteClick = () => {
       UIkit.modal.confirm("ツイートを削除します。").then(
         () => {
-          store.dispatch("deletePost", { postId: displayPost.value._id });
+          store.dispatch("deletePost", { postId: displayPost._id });
         },
         () => {
           // noop
