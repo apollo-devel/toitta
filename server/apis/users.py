@@ -119,3 +119,25 @@ def list_followers(username):
             del u["hashed_password"]
             result.append(u)
     return jsonify(result)
+
+
+@app.route("/api/search/users", methods=["GET"])
+@login_required()
+def search_users():
+    query = request.args.get("q")
+    if not query:
+        return jsonify([])
+    result = []
+    for user in User._collection.find(
+        {
+            "$or": [
+                {"username": {"$regex": query, "$options": "i"}},
+                {"display_name": {"$regex": query, "$options": "i"}},
+            ]
+        },
+        sort=[("liked_at", pymongo.DESCENDING)],
+    ):
+        del user["hashed_password"]
+        result.append(user)
+
+    return jsonify(result)

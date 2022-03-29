@@ -10,7 +10,7 @@
             <display-name :user="user"></display-name>
             <div>
               <username-link :user="user"></username-link>
-              <span class="uk-label" v-if="isFollowed">
+              <span class="uk-margin-small-left uk-label" v-if="isFollowed">
                 フォローされています
               </span>
             </div>

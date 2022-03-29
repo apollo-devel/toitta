@@ -110,6 +110,25 @@ def list_user_posts(username):
     return jsonify(results)
 
 
+@app.route("/api/search/posts", methods=["GET"])
+@login_required()
+def search_posts():
+    query = request.args.get("q")
+    if not query:
+        return jsonify([])
+    results = []
+    for post in Post._collection.find(
+        {"content": {"$regex": query, "$options": "i"}},
+        sort=[("created_at", pymongo.DESCENDING)],
+    ):
+        results.append(_populate(post))
+
+    if results:
+        _set_liking_and_retweeting(results)
+
+    return jsonify(results)
+
+
 def _set_liking_and_retweeting(results):
     """
     resultsの各要素に、ログインユーザーが いいね / リツイート をしたかどうかを

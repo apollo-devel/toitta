@@ -28,6 +28,10 @@ export default createStore({
       tweetsAndReplies: [],
       likes: [],
     },
+    search: {
+      posts: [],
+      users: [],
+    },
     notifications: [],
     unreadNotificationCount: 0,
     replyTo: undefined,
@@ -53,6 +57,7 @@ export default createStore({
         state.profile.tweets,
         state.profile.tweetsAndReplies,
         state.profile.likes,
+        state.search.posts,
       ];
 
       if (state.post) {
@@ -106,6 +111,12 @@ export default createStore({
     },
     setUnreadNotificationCount(state, args) {
       state.unreadNotificationCount = args.count;
+    },
+    setSearchPosts(state, args) {
+      state.search.posts = args.posts;
+    },
+    setSearchUsers(state, args) {
+      state.search.users = args.users;
     },
   },
   actions: {
@@ -275,6 +286,30 @@ export default createStore({
         .get("/api/notifications?unread_only=true")
         .then((resp) => {
           commit("setUnreadNotificationCount", { count: resp.data.length });
+        })
+        .catch(defaultErrorHandler);
+    },
+    async searchPosts({ commit }, args) {
+      return axios
+        .get("/api/search/posts", {
+          params: {
+            q: args.query,
+          },
+        })
+        .then((resp) => {
+          commit("setSearchPosts", { posts: resp.data });
+        })
+        .catch(defaultErrorHandler);
+    },
+    async searchUsers({ commit }, args) {
+      return axios
+        .get("/api/search/users", {
+          params: {
+            q: args.query,
+          },
+        })
+        .then((resp) => {
+          commit("setSearchUsers", { users: resp.data });
         })
         .catch(defaultErrorHandler);
     },

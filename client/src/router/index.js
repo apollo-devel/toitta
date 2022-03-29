@@ -52,6 +52,12 @@ const routes = [
     component: () => import("../views/NotificationsView.vue"),
   },
   {
+    path: "/search",
+    name: "search",
+    meta: { loginRequired: true },
+    component: () => import("../views/SearchView.vue"),
+  },
+  {
     path: "/register",
     name: "register",
     meta: { layout: "simple-layout" },
