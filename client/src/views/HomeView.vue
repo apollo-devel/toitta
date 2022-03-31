@@ -1,7 +1,6 @@
 <template>
   <div>
     <h3 class="uk-margin-top">Home</h3>
-    <button @click="onClick">ev1</button>
     <post-edit></post-edit>
     <hr class="uk-margin-right" />
     <div>
@@ -15,7 +14,6 @@
 </template>
 
 <script>
-import { io } from "socket.io-client";
 import { onMounted, computed } from "vue";
 import { useStore } from "vuex";
 
@@ -34,21 +32,8 @@ export default {
       store.dispatch("loadPosts");
     });
 
-    const socket = io();
-    const onClick = () => {
-      socket.emit("ev1");
-    };
-    socket.on("resp1", (arg) => {
-      console.log("resp1");
-      console.log(arg);
-    });
-    socket.on("connected", (arg) => {
-      console.log("connected");
-      console.log(arg);
-    });
     return {
       posts: computed(() => store.state.posts),
-      onClick,
     };
   },
 };

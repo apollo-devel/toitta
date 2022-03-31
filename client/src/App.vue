@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="uk-height-1-1">
     <component v-bind:is="layout()"></component>
   </div>
 </template>

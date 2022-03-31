@@ -1,15 +1,21 @@
 <template>
   <div>
     <div class="uk-flex uk-flex-top">
-      <avatar-pic :user="user"></avatar-pic>
+      <avatar-pic :user="user" :disableLink="disableLink"></avatar-pic>
       <div
         class="uk-flex uk-flex-left uk-flex-column uk-flex-1 uk-margin-small-left"
       >
         <div class="uk-flex uk-flex-row uk-flex-center">
           <div class="uk-flex-1">
-            <display-name :user="user"></display-name>
+            <display-name
+              :user="user"
+              :disableLink="disableLink"
+            ></display-name>
             <div>
-              <username-link :user="user"></username-link>
+              <username-link
+                :user="user"
+                :disableLink="disableLink"
+              ></username-link>
               <span class="uk-margin-small-left uk-label" v-if="isFollowed">
                 フォローされています
               </span>
@@ -17,13 +23,19 @@
           </div>
           <div>
             <button
-              v-if="!isMe"
+              v-if="!isMe && !disableLink"
               class="uk-button uk-button-small"
               :class="isFollowing ? 'uk-button-default' : 'uk-button-secondary'"
               @click="onFollowClick"
             >
               {{ isFollowing ? "フォロー中" : "フォロー" }}
             </button>
+            <span
+              v-if="disableLink && isFollowing"
+              class="uk-text-muted uk-text-small"
+            >
+              フォローしています
+            </span>
           </div>
         </div>
         <div class="uk-margin-small-top">
@@ -51,6 +63,10 @@ export default {
   },
   props: {
     user: Object,
+    disableLink: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props) {
     const store = useStore();

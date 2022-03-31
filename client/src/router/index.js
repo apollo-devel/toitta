@@ -58,6 +58,24 @@ const routes = [
     component: () => import("../views/SearchView.vue"),
   },
   {
+    path: "/messages/new",
+    name: "newChat",
+    meta: { loginRequired: true },
+    component: () => import("../views/NewChatView.vue"),
+  },
+  {
+    path: "/messages/:chatId",
+    name: "chat",
+    meta: { loginRequired: true },
+    component: () => import("../views/ChatView.vue"),
+  },
+  {
+    path: "/messages",
+    name: "chats",
+    meta: { loginRequired: true },
+    component: () => import("../views/ChatsView.vue"),
+  },
+  {
     path: "/register",
     name: "register",
     meta: { layout: "simple-layout" },
