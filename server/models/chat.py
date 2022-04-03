@@ -74,3 +74,27 @@ class Chat:
         ]
 
         return cls._collection.aggregate(pipelines)
+
+    @classmethod
+    def get_chat(cls, chat_id):
+        pipelines = [
+            {
+                "$match": {
+                    "_id": ObjectId(chat_id),
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "users",
+                    "foreignField": "_id",
+                    "as": "users",
+                }
+            },
+        ]
+
+        result = list(cls._collection.aggregate(pipelines))
+        if len(result):
+            return result[0]
+        else:
+            return None

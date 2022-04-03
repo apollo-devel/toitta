@@ -47,3 +47,27 @@ def create_message(chat_id):
     message = vars(message)
     message["sender"] = session["user"]
     return jsonify(message)
+
+
+@app.route("/api/chats/<chat_id>", methods=["GET"])
+@login_required()
+def get_chat(chat_id):
+    chat = Chat.get_chat(chat_id)
+    if not chat:
+        return error("チャットが存在しないか、参加していないチャットです")
+    user_id = session["user"]["_id"]
+    if not [u for u in chat.get("users", []) if u["_id"] == ObjectId(user_id)]:
+        return error("チャットが存在しないか、参加していないチャットです")
+    return jsonify(chat)
+
+
+@app.route("/api/chats/<chat_id>/messages", methods=["GET"])
+@login_required()
+def list_messages(chat_id):
+    chat = Chat.get_chat(chat_id)
+    if not chat:
+        return error("チャットが存在しないか、参加していないチャットです")
+    user_id = session["user"]["_id"]
+    if not [u for u in chat.get("users", []) if u["_id"] == ObjectId(user_id)]:
+        return error("チャットが存在しないか、参加していないチャットです")
+    return jsonify(list(Message.list_messages(chat_id)))
