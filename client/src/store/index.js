@@ -32,6 +32,9 @@ export default createStore({
       posts: [],
       users: [],
     },
+    chat: {
+      users: [],
+    },
     notifications: [],
     unreadNotificationCount: 0,
     replyTo: undefined,
@@ -117,6 +120,9 @@ export default createStore({
     },
     setSearchUsers(state, args) {
       state.search.users = args.users;
+    },
+    setSearchUsersForChat(state, args) {
+      state.chat.users = args.users;
     },
   },
   actions: {
@@ -311,6 +317,27 @@ export default createStore({
         .then((resp) => {
           commit("setSearchUsers", { users: resp.data });
         })
+        .catch(defaultErrorHandler);
+    },
+    async clearUsersForChat({ commit }) {
+      commit("setSearchUsersForChat", { users: [] });
+    },
+    async searchUsersForChat({ commit }, args) {
+      return axios
+        .get("/api/search/users", {
+          params: {
+            q: args.query,
+          },
+        })
+        .then((resp) => {
+          commit("setSearchUsersForChat", { users: resp.data });
+        })
+        .catch(defaultErrorHandler);
+    },
+    async createChat(_, args) {
+      return axios
+        .post("/api/chats", args)
+        .then((resp) => Promise.resolve(resp.data))
         .catch(defaultErrorHandler);
     },
   },
