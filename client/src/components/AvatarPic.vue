@@ -7,14 +7,14 @@
     <img
       :src="url"
       class="uk-border-circle avatar"
-      :class="{ large: size === 'large' }"
+      :class="{ large: size === 'large', small: size === 'small' }"
     />
   </router-link>
   <img
     v-else
     :src="url"
     class="uk-border-circle avatar"
-    :class="{ large: size === 'large' }"
+    :class="{ large: size === 'large', small: size === 'small' }"
   />
 </template>
 
@@ -61,6 +61,12 @@ export default {
   width: 132px;
   height: 132px;
   border: 4px solid #fff;
+}
+
+.avatar.small {
+  max-width: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 .large-link {

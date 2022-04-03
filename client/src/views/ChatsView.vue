@@ -34,7 +34,7 @@
           </div>
           <div class="uk-flex-1 uk-flex uk-flex-column uk-width-expand">
             <div class="uk-text-bold uk-text-truncate uk-margin-right">
-              {{ chatName(chat) }}
+              {{ chatName(chat, userLoggedIn) }}
             </div>
             <div
               class="uk-text-small uk-text-muted uk-text-truncate uk-margin-right"
@@ -54,6 +54,8 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
+import { chatName } from "@/functions/chat.js";
+
 export default {
   setup() {
     const store = useStore();
@@ -62,15 +64,7 @@ export default {
 
     const chats = computed(() => store.state.chat.chats);
 
-    const chatName = (chat) => {
-      if (chat.name) {
-        return chat.name;
-      }
-      return chat.users
-        .filter((u) => u._id !== store.state.userLoggedIn._id)
-        .map((u) => u.display_name)
-        .join(", ");
-    };
+    const userLoggedIn = store.state.userLoggedIn;
 
     const latestMessage = (chat) => {
       if (chat.latestMessage) {
@@ -110,6 +104,7 @@ export default {
     };
 
     return {
+      userLoggedIn,
       chats,
       chatName,
       latestMessage,

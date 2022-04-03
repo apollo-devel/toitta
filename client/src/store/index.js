@@ -36,6 +36,7 @@ export default createStore({
       users: [],
       chats: [],
       messages: [],
+      chat: undefined,
     },
     notifications: [],
     unreadNotificationCount: 0,
@@ -129,8 +130,14 @@ export default createStore({
     setChats(state, args) {
       state.chat.chats = args.chats;
     },
+    setChat(state, args) {
+      state.chat.chat = args.chat;
+    },
     setMessages(state, args) {
       state.chat.messages = args.messages;
+    },
+    addMessage(state, args) {
+      state.chat.messages.push(args.message);
     },
   },
   actions: {
@@ -356,25 +363,23 @@ export default createStore({
         })
         .catch(defaultErrorHandler);
     },
-    async sendMessage(_, args) {
+    async sendMessage({ commit }, args) {
       return axios
         .post(`/api/chats/${args.chat}/messages`, {
           content: args.content,
           sender: args.sender,
         })
         .then((resp) => {
-          // TODO
-          console.log(resp.data);
+          commit("addMessage", { message: resp.data });
           return Promise.resolve(resp.data);
         })
         .catch(defaultErrorHandler);
     },
-    async loadChat(_, args) {
+    async loadChat({ commit }, args) {
       return axios
         .get(`/api/chats/${args.chat}`)
         .then((resp) => {
-          // TODO
-          console.log(resp.data);
+          commit("setChat", { chat: resp.data });
         })
         .catch(defaultErrorHandler);
     },
@@ -382,7 +387,6 @@ export default createStore({
       return axios
         .get(`/api/chats/${args.chat}/messages`)
         .then((resp) => {
-          console.log(resp.data);
           commit("setMessages", { messages: resp.data });
         })
         .catch(defaultErrorHandler);

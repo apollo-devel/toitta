@@ -3,7 +3,19 @@
     <div>
       <h3 class="uk-margin-top">チャット</h3>
     </div>
-    <div class="uk-text-bold">チャットのタイトル</div>
+    <div class="uk-text-bold">
+      {{ chatName(chat, userLoggedIn) }}
+    </div>
+    <div class="uk-margin-small-top">
+      <avatar-pic
+        v-for="user in users"
+        :key="user._id"
+        :user="user"
+        size="small"
+        :disableLink="true"
+        class="uk-margin-small-right"
+      ></avatar-pic>
+    </div>
     <hr class="top-hr" />
     <div class="uk-flex-1 uk-flex uk-flex-column content">
       <chat-message
@@ -39,15 +51,20 @@ import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
 
+import AvatarPic from "@/components/AvatarPic.vue";
 import ChatMessage from "@/components/ChatMessage.vue";
+import { chatName } from "@/functions/chat.js";
 
 export default {
   components: {
     ChatMessage,
+    AvatarPic,
   },
   setup() {
     const store = useStore();
     const route = useRoute();
+
+    const userLoggedIn = store.state.userLoggedIn;
 
     const text = ref("");
 
@@ -120,7 +137,15 @@ export default {
       return next.sender._id != message.sender._id;
     };
 
+    const chat = computed(() => store.state.chat.chat);
+    const users = computed(() => {
+      return store.state.chat.chat.users.filter(
+        (u) => u._id != store.state.userLoggedIn._id
+      );
+    });
+
     return {
+      userLoggedIn,
       messages,
       text,
       enableSubmit,
@@ -130,6 +155,9 @@ export default {
       isMine,
       isFirst,
       isLast,
+      chatName,
+      chat,
+      users,
     };
   },
 };
