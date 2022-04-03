@@ -34,6 +34,7 @@ export default createStore({
     },
     chat: {
       users: [],
+      chats: [],
     },
     notifications: [],
     unreadNotificationCount: 0,
@@ -123,6 +124,9 @@ export default createStore({
     },
     setSearchUsersForChat(state, args) {
       state.chat.users = args.users;
+    },
+    setChats(state, args) {
+      state.chat.chats = args.chats;
     },
   },
   actions: {
@@ -338,6 +342,14 @@ export default createStore({
       return axios
         .post("/api/chats", args)
         .then((resp) => Promise.resolve(resp.data))
+        .catch(defaultErrorHandler);
+    },
+    async loadChats({ commit }) {
+      return axios
+        .get("/api/chats")
+        .then((resp) => {
+          commit("setChats", { chats: resp.data });
+        })
         .catch(defaultErrorHandler);
     },
   },

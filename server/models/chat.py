@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 
+import pymongo
 from bson.objectid import ObjectId
 
 from database import db
@@ -43,3 +44,33 @@ class Chat:
             return "自身を含まないチャットは作成できません"
 
         return None
+
+    @classmethod
+    def list_chats(cls, user_id):
+        pipelines = [
+            {
+                "$match": {
+                    "$expr": {
+                        "$in": [
+                            ObjectId(user_id),
+                            "$users",
+                        ]
+                    }
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "users",
+                    "foreignField": "_id",
+                    "as": "users",
+                }
+            },
+            {
+                "$sort": {
+                    "updated_at": pymongo.DESCENDING,
+                }
+            },
+        ]
+
+        return cls._collection.aggregate(pipelines)
