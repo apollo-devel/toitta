@@ -352,6 +352,19 @@ export default createStore({
         })
         .catch(defaultErrorHandler);
     },
+    async sendMessage(_, args) {
+      return axios
+        .post(`/api/chats/${args.chat}/messages`, {
+          content: args.content,
+          sender: args.sender,
+        })
+        .then((resp) => {
+          // TODO
+          console.log(resp.data);
+          return Promise.resolve(resp.data);
+        })
+        .catch(defaultErrorHandler);
+    },
   },
   modules: {},
 });

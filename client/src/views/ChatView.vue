@@ -174,12 +174,82 @@
       </div>
     </div>
     <hr class="bottom-hr" />
-    <div class="uk-flex uk-flex-row uk-flex-middle uk-margin-small-bottom">
-      <input type="text" class="uk-input uk-flex-1 uk-margin-right" />
-      <span uk-icon="icon: comment; ratio: 1.5"></span>
+    <div class="uk-flex uk-flex-row uk-flex-middle uk-margin-bottom">
+      <input
+        type="text"
+        class="uk-input uk-flex-1 uk-margin-right"
+        v-model="text"
+        @keypress.prevent.enter.exact="enableSubmit"
+        @keyup.prevent.enter.exact="submit"
+      />
+      <span
+        uk-icon="icon: comment; ratio: 1.5"
+        @click="onSendClick"
+        :class="{ clickable: isValid }"
+        :disabled="!isValid"
+      ></span>
     </div>
   </div>
 </template>
+
+<script>
+import { computed, ref } from "vue";
+import { useRoute } from "vue-router";
+import { useStore } from "vuex";
+
+export default {
+  setup() {
+    const store = useStore();
+    const route = useRoute();
+
+    const text = ref("");
+
+    const canSubmit = ref(false);
+
+    const enableSubmit = () => {
+      canSubmit.value = true;
+    };
+
+    const _post = () => {
+      store
+        .dispatch("sendMessage", {
+          content: text.value,
+          sender: store.state.userLoggedIn._id,
+          chat: route.params["chatId"],
+        })
+        .then(() => (text.value = ""));
+    };
+
+    const submit = () => {
+      if (!canSubmit.value || !text.value.trim()) {
+        return;
+      }
+      _post();
+      canSubmit.value = false;
+    };
+
+    const onSendClick = () => {
+      if (!text.value.trim()) {
+        return;
+      }
+      _post();
+      canSubmit.value = false;
+    };
+
+    const isValid = computed(() => {
+      return Boolean(text.value);
+    });
+
+    return {
+      text,
+      enableSubmit,
+      submit,
+      onSendClick,
+      isValid,
+    };
+  },
+};
+</script>
 
 <style scoped>
 .content {
@@ -230,5 +300,9 @@
   height: 100%;
   border-radius: 50%;
   vertical-align: bottom;
+}
+
+.clickable {
+  cursor: pointer;
 }
 </style>
