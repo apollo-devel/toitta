@@ -68,7 +68,10 @@ export default {
 
       store
         .dispatch("login", { credential })
-        .then(() => router.push("/"))
+        .then((resp) => {
+          store.dispatch("joinRoom", { id: resp._id });
+          router.push("/");
+        })
         .catch((error) => {
           UIkit.notification(error.response.data.error.message, {
             status: "danger",

@@ -42,6 +42,7 @@ export default createStore({
     unreadNotificationCount: 0,
     replyTo: undefined,
     post: undefined,
+    socket: undefined,
   },
   getters: {},
   mutations: {
@@ -139,6 +140,9 @@ export default createStore({
     addMessage(state, args) {
       state.chat.messages.push(args.message);
     },
+    setSocket(state, args) {
+      state.socket = args.socket;
+    },
   },
   actions: {
     async registerUser({ commit }, args) {
@@ -149,6 +153,7 @@ export default createStore({
     async login({ commit }, args) {
       return axios.post("/api/login", args.credential).then((resp) => {
         commit("setUserLoggedIn", { user: resp.data });
+        return Promise.resolve(resp.data);
       });
     },
     async logout({ commit }) {
@@ -390,6 +395,19 @@ export default createStore({
           commit("setMessages", { messages: resp.data });
         })
         .catch(defaultErrorHandler);
+    },
+    async setSocket({ commit }, args) {
+      commit("setSocket", { socket: args.socket });
+    },
+    async handleSocketEvent({ commit }, args) {
+      switch (args.event) {
+        case "message":
+          commit("addMessage", { message: args.args[0] });
+          break;
+      }
+    },
+    async joinRoom({ state }, args) {
+      state.socket.emit("join", { _id: args.id });
     },
   },
   modules: {},

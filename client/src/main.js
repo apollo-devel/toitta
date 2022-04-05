@@ -21,6 +21,7 @@ router.beforeEach(async (to, from, next) => {
       });
       user = store.state.userLoggedIn;
       if (user && user._id) {
+        store.dispatch("joinRoom", { id: user._id });
         store.dispatch("loadUnreadNotifications");
         next();
       } else {

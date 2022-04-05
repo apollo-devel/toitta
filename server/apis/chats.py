@@ -2,9 +2,11 @@ from bson.objectid import ObjectId
 from flask import jsonify, request, session
 
 from apis import error, login_required
-from main import app
+from main import app, socketio
 from models.chat import Chat
 from models.message import Message
+
+# rom flask_socketio import emit
 
 
 @app.route("/api/chats", methods=["POST"])
@@ -46,6 +48,15 @@ def create_message(chat_id):
     message.create()
     message = vars(message)
     message["sender"] = session["user"]
+    message["_id"] = str(message["_id"])
+    message["chat"] = str(message["chat"])
+    message["created_at"] = str(message["created_at"])
+    message["updated_at"] = str(message["updated_at"])
+
+    for uid in chat.get("users"):
+        if str(uid) == user_id:
+            continue
+        socketio.emit("message", message, room=str(uid))
     return jsonify(message)
 
 
